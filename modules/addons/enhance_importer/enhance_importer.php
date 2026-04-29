@@ -16,7 +16,7 @@ function enhance_importer_config(): array
     return [
         'name'        => 'Enhance Package Importer',
         'description' => 'Import selected Enhance plans/packages and existing customer services into WHMCS.',
-        'version'     => '1.0.0',
+        'version'     => '1.0.1',
         'author'      => 'WebDig.DEV',
         'language'    => 'english',
         'fields'      => [],

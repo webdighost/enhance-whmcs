@@ -1,6 +1,6 @@
 # Enhance WHMCS Module
 
-Version: 1.0.0  
+Version: 1.0.1  
 Compatible with: WHMCS 8.x · PHP 8.0+ · Enhance Control Panel
 
 ## Overview
@@ -22,6 +22,18 @@ This module includes:
 - Secure admin actions with CSRF protection
 
 This module is designed for production environments and supports multi-server setups.
+
+## Release 1.0.1 Notes
+
+Version 1.0.1 includes the final production-tested Client SSO fix.
+
+Client area SSO now uses the official Enhance endpoint:
+
+```text
+/orgs/{orgId}/members/{memberId}/sso
+```
+
+Invalid legacy fallback endpoints such as `/ssoToken` and `/login` were removed to prevent automatic authentication failures.
 
 ---
 
@@ -378,7 +390,7 @@ before production deployment.
 
 Current stable release:
 
-v1.0.0
+v1.0.1
 
 ---
 

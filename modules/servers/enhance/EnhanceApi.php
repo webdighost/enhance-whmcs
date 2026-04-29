@@ -407,34 +407,38 @@ class EnhanceApi
     }
 
     /**
-     * Returns a one-time SSO URL for the org owner.
-     * Tries ssoToken first, falls back to session-link endpoint.
-     * PT: URL SSO one-time para o owner. Tenta ssoToken primeiro, fallback para session link.
+     * Returns a one-time SSO URL for the organisation owner.
+     * Enhance official endpoint: GET /orgs/{orgId}/members/{memberId}/sso
      */
     public function getOwnerSsoUrl(string $orgId): ?string
     {
         $members = $this->getMembers($orgId);
         $ownerId = null;
 
-        foreach ($members['items'] ?? [] as $m) {
-            if (in_array('Owner', $m['roles'] ?? [], true)) {
-                $ownerId = $m['id'];
+        foreach ($members["items"] ?? [] as $m) {
+            if (!empty($m["isActive"]) && in_array("Owner", $m["roles"] ?? [], true)) {
+                $ownerId = $m["id"];
                 break;
             }
         }
 
-        if (!$ownerId) return null;
-
-        // Preferred: ssoToken
-        $token = $this->send('GET', "/orgs/{$orgId}/members/{$ownerId}/ssoToken");
-        if (!empty($token['ssoToken'])) {
-            return "https://{$this->host}/login?ssoToken=" . urlencode($token['ssoToken']);
+        if (!$ownerId) {
+            return null;
         }
 
-        // Fallback: session link
-        $link = $this->send('GET', "/orgs/{$orgId}/members/{$ownerId}/login");
-        if (!empty($link['_raw'])) return trim($link['_raw'], '"');
-        if (!empty($link['url']))  return $link['url'];
+        $link = $this->send("GET", "/orgs/{$orgId}/members/{$ownerId}/sso");
+
+        if (!empty($link["_raw"])) {
+            return trim($link["_raw"], " \t\n\r\0\x0B\"");
+        }
+
+        if (!empty($link["url"])) {
+            return $link["url"];
+        }
+
+        if (!empty($link["loginUrl"])) {
+            return $link["loginUrl"];
+        }
 
         return null;
     }

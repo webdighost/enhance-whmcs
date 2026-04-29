@@ -1,5 +1,24 @@
 # Changelog
 
+## Version 1.0.1
+
+### Fixed
+
+- Final client SSO implementation corrected.
+- Removed invalid fallback endpoints:
+  - `/members/{id}/ssoToken`
+  - `/members/{id}/login`
+- Enforced the official Enhance SSO endpoint:
+  - `/orgs/{orgId}/members/{memberId}/sso`
+- Fixed client area **Login to Panel** authentication failures.
+- Confirmed production compatibility with live Enhance environments.
+
+### Notes
+
+This version should be considered the official GitHub release for public use.
+
+---
+
 ## Version 1.0.0
 
 Initial stable public release
