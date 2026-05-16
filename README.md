@@ -1,4 +1,3 @@
-````md
 # Enhance WHMCS Module
 
 Professional WHMCS provisioning and automation module for Enhance Control Panel.
@@ -505,4 +504,3 @@ v1.0.2
 ## License
 
 Private commercial use permitted according to repository owner terms.
-````
