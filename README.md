@@ -1,13 +1,27 @@
+````md
 # Enhance WHMCS Module
 
-Version: 1.0.1  
+Professional WHMCS provisioning and automation module for Enhance Control Panel.
+
+---
+
+## Latest Stable Release
+
+Current stable version: **v1.0.2**
+
+Download:  
+https://github.com/webdighost/enhance-whmcs/releases/latest
+
+---
+
+Version: 1.0.2  
 Compatible with: WHMCS 8.x · PHP 8.0+ · Enhance Control Panel
 
 ## Overview
 
 Enhance WHMCS Module is a professional provisioning and management module for integrating WHMCS with Enhance Control Panel.
 
-This module includes:
+This module extends and improves the original Enhance WHMCS module by adding:
 
 - Client Single Sign-On (SSO)
 - Direct Admin Login to Enhance Panel
@@ -20,20 +34,40 @@ This module includes:
 - Subscription mapping
 - Duplicate prevention
 - Secure admin actions with CSRF protection
+- Multi-server support
+- WHMCS Server Group support
 
 This module is designed for production environments and supports multi-server setups.
 
-## Release 1.0.1 Notes
+---
 
-Version 1.0.1 includes the final production-tested Client SSO fix.
+## Release 1.0.2 Notes
 
-Client area SSO now uses the official Enhance endpoint:
+Version 1.0.2 includes multiple fixes and provisioning improvements.
+
+### Fixed
+
+- Fixed website creation issue caused by invalid integer conversion:
 
 ```text
-/orgs/{orgId}/members/{memberId}/sso
+invalid type: string "11", expected i32
 ```
 
-Invalid legacy fallback endpoints such as `/ssoToken` and `/login` were removed to prevent automatic authentication failures.
+- Fixed incorrect `YespleMode` parameter naming
+- Fixed provisioning compatibility issues with newer Enhance API responses
+
+### Added
+
+- Added missing `composer.json`
+- Added WHMCS Server Group compatibility
+- Improved package provisioning validation
+- Improved API request handling
+
+### Improved
+
+- Better error handling
+- Better compatibility with production environments
+- Improved logging and diagnostics
 
 ---
 
@@ -55,7 +89,7 @@ Invalid legacy fallback endpoints such as `/ssoToken` and `/login` were removed 
 
 - Active Enhance installation
 - SuperAdmin API Token
-- Master Organisation UUID (masterOrgId)
+- Master Organisation UUID (`masterOrgId`)
 
 ---
 
@@ -67,15 +101,19 @@ Copy the module files to your WHMCS root.
 
 Correct structure:
 
+```text
 modules/servers/enhance/
 includes/hooks/enhance.php
 modules/addons/enhance_importer/
+```
 
 Important:
 
 The module folder must be named exactly:
 
+```text
 enhance
+```
 
 ---
 
@@ -83,11 +121,15 @@ enhance
 
 Run inside:
 
+```text
 modules/servers/enhance/
+```
 
 Command:
 
+```bash
 composer install --no-dev --optimize-autoloader
+```
 
 Do not run as root.
 
@@ -99,8 +141,10 @@ Use the WHMCS web server user instead.
 
 Recommended permissions:
 
+```bash
 chmod 750 modules/servers/enhance
 chmod 640 modules/servers/enhance/*.php
+```
 
 ---
 
@@ -110,11 +154,15 @@ Login as SuperAdmin.
 
 Go to:
 
+```text
 Profile → API Tokens → Create Token
+```
 
 Permissions required:
 
+```text
 SuperAdmin
+```
 
 Save the token immediately.
 
@@ -126,15 +174,21 @@ It is only shown once.
 
 Go to:
 
+```text
 Settings → General
+```
 
 Copy:
 
+```text
 Organisation ID
+```
 
 This is your:
 
+```text
 masterOrgId
+```
 
 ---
 
@@ -142,7 +196,9 @@ masterOrgId
 
 Go to:
 
+```text
 System Settings → Products/Services → Servers → Add New Server
+```
 
 Use:
 
@@ -152,39 +208,55 @@ Any descriptive name
 
 Example:
 
+```text
 Enhance Server 1
+```
 
 ### Hostname
 
 Example:
 
+```text
 panel.example.com
+```
 
 (no https://)
 
 ### Server Type
 
+```text
 Enhance
+```
 
 ### Username
 
+```text
 masterOrgId
+```
 
 ### Access Hash
 
+```text
 API Token
+```
 
 ### Secure
 
+```text
 Enabled
+```
 
 Save and click:
 
+```text
 Test Connection
+```
 
 You should receive:
 
+```text
 Connection Successful
+```
 
 ---
 
@@ -192,19 +264,27 @@ Connection Successful
 
 Go to:
 
+```text
 System Settings → Products/Services → Products/Services
+```
 
 Create:
 
+```text
 Hosting Account
+```
 
 Module:
 
+```text
 Enhance
+```
 
 Then in:
 
+```text
 Module Settings
+```
 
 Select:
 
@@ -213,7 +293,9 @@ Select:
 
 Recommended:
 
+```text
 soft
+```
 
 ---
 
@@ -221,17 +303,23 @@ soft
 
 Go to:
 
+```text
 System Settings → Addon Modules
+```
 
 Activate:
 
+```text
 Enhance Package Importer
+```
 
 Grant admin permissions.
 
 This enables:
 
+```text
 Addons → Enhance Package Importer
+```
 
 ---
 
@@ -253,7 +341,9 @@ Import packages from Enhance into WHMCS with:
 
 Import services already provisioned in Enhance using:
 
+```text
 EnhanceOrgId
+```
 
 Priority:
 
@@ -291,13 +381,13 @@ Automatic import is disabled by default for safety.
 
 Clients can login directly to Enhance without entering credentials.
 
-Uses:
+Uses the official Enhance SSO endpoint:
 
-ssoToken
+```text
+/orgs/{orgId}/members/{memberId}/sso
+```
 
-Fallback:
-
-session login URL
+Legacy fallback endpoints were removed to improve reliability and compatibility.
 
 ---
 
@@ -305,7 +395,9 @@ session login URL
 
 WHMCS administrators use:
 
+```text
 Direct panel access
+```
 
 Not client SSO.
 
@@ -317,13 +409,17 @@ This matches the original Enhance module behavior.
 
 ### Client Level
 
+```text
 EnhanceOrgId
+```
 
 Stores the Enhance organisation UUID.
 
 ### Service Level
 
+```text
 SUBSCRIPTION_ID
+```
 
 Stores the Enhance subscription ID.
 
@@ -347,19 +443,29 @@ Check:
 
 Check:
 
-EnhanceOrgId exists for the client
+```text
+EnhanceOrgId
+```
+
+exists for the client.
 
 ### Suspend does not work
 
 Check:
 
-SUBSCRIPTION_ID exists for the service
+```text
+SUBSCRIPTION_ID
+```
+
+exists for the service.
 
 ### Importer missing tabs
 
 Clear:
 
+```text
 templates_c/
+```
 
 Then disable and re-enable the addon.
 
@@ -390,10 +496,13 @@ before production deployment.
 
 Current stable release:
 
-v1.0.1
+```text
+v1.0.2
+```
 
 ---
 
 ## License
 
 Private commercial use permitted according to repository owner terms.
+````
