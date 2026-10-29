@@ -46,6 +46,8 @@ run "Client profile panel (hook)"        $PHP widget_test.php "$ENHANCE_ROOT"
 run "Product options and username"       $PHP product_test.php "$ENHANCE_ROOT"
 run "Admin service tab"                  $PHP admin_test.php "$ENHANCE_ROOT"
 run "Client area template (Smarty)"      $PHP render_test.php "$ENHANCE_ROOT"
+run "Settings (Enhance Manager)"         $PHP settings_test.php "$ENHANCE_ROOT"
+run "Settings locked by config.php"      $PHP settings_test.php "$ENHANCE_ROOT" locked
 
 echo "== Client area tools (HTTP redirects)"
 rm -f "$TMP/tools.db" "$TMP/activity.log"

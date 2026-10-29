@@ -1,6 +1,6 @@
 # Enhance para WHMCS - v1.4.0 (guia em português)
 
-Módulo de servidor, addon importador e hooks que ligam o WHMCS ao painel
+Módulo de servidor, addon de gestão (Enhance Manager) e hooks que ligam o WHMCS ao painel
 [Enhance](https://enhance.com) através da API REST. Interface em inglês com tradução completa em
 português europeu. Não precisa de Composer nem de bibliotecas externas no WHMCS.
 
@@ -20,15 +20,16 @@ do WordPress, backups recentes e restauro (opcional).
 **Administração:** teste de ligação com diagnóstico passo a passo, painel no perfil do cliente (estado da
 organização, suspender/reativar, link para definir a palavra-passe, pesquisar e associar organizações),
 separador do serviço (organização, subscrição, website, última ação do módulo e último erro,
-associar/reparar a subscrição) e addon importador (planos Enhance para produtos, subscrições existentes
-para serviços, sincronização).
+associar/reparar a subscrição) e o addon **Enhance Manager**: definições da área de cliente, planos
+Enhance para produtos, subscrições existentes para serviços, sincronização.
 
 ## Instalação e atualização
 
 1. Copie as pastas `includes/` e `modules/` para a raiz do WHMCS, substituindo os ficheiros. Os nomes
    do módulo e das tabelas não mudam entre versões; as associações mantêm-se e as tabelas novas são
    criadas automaticamente.
-2. WHMCS > Definições do Sistema > Módulos Addon: ative o **Enhance Importer** e dê acesso ao seu grupo
+2. WHMCS > Definições do Sistema > Módulos Addon: ative o **Enhance Manager** (pasta `enhance_importer`;
+   chamava-se Enhance Importer antes da 1.4.0) e dê acesso ao seu grupo
    de administradores.
 3. Configure o servidor Enhance (abaixo) e clique em **Testar ligação**.
 
@@ -61,11 +62,11 @@ pode pôr a sua palavra-passe do WHMCS no campo Password e o seu utilizador no U
 
 ## Ferramentas na área de cliente
 
-Todos os websites do serviço são listados (1 ou 1000), por ordem de domínio, 5 por página
-(`ENHANCE_CLIENTAREA_WEBSITES_PER_PAGE` em `config.php`), com pesquisa por domínio quando há mais de uma
-página. A lista de websites custa um pedido à API; as ferramentas abaixo são carregadas só para os
-websites da página visível (5 pedidos cada) e nunca com a subscrição suspensa. Tudo fica em cache 5
-minutos; os links de acesso só são criados quando o cliente clica.
+Todos os websites do serviço são listados (1 ou 1000), por ordem de domínio, 5 por página por omissão,
+com pesquisa por domínio quando há mais de uma página. A lista de websites custa um pedido à API; as
+ferramentas abaixo são carregadas só para os websites da página visível (até 5 pedidos cada, só para as
+secções visíveis) e nunca com a subscrição suspensa. Tudo fica em cache 5 minutos por omissão; os links de
+acesso só são criados quando o cliente clica. Tudo isto é configurável no separador Definições (abaixo).
 
 - **Webmail:** uma entrada por caixa de correio em que o Enhance permite SSO.
 - **phpMyAdmin:** uma entrada por base de dados.
@@ -75,7 +76,7 @@ minutos; os links de acesso só são criados quando o cliente clica.
   "Sem certificado SSL" só aparece quando o Enhance o confirma, nunca quando a consulta falha.
 - **Backups:** os últimos 5, do mais recente para o mais antigo, com data e hora, tipo, tamanho e estado.
   O tamanho é o conteúdo copiado (ficheiros + bases de dados + emails) em B/KB/MB/GB; fica vazio quando
-  o Enhance indica 0 e pode ser escondido com `ENHANCE_CLIENTAREA_BACKUP_SIZE` em `config.php`. Um backup
+  o Enhance indica 0 e pode ser escondido nas definições. Um backup
   sem nada para copiar nunca aparece como falhado. O restauro (se ativo no produto) repõe ficheiros
   e bases de dados e, opcionalmente, todas as caixas de correio. Exige o titular da conta, a caixa de
   confirmação e um token de segurança válido; só aceita backups bem-sucedidos e fica no registo de atividade.
@@ -83,6 +84,19 @@ minutos; os links de acesso só são criados quando o cliente clica.
 Os utilizadores de uma conta de cliente (utilizadores do WHMCS 8) precisam da permissão **Single Sign-On**
 para os botões de acesso. A criação de backups não é oferecida: o Enhance executa-a num único pedido
 longo, que ultrapassaria os limites do PHP.
+
+## Definições (Addons > Enhance Manager > Definições)
+
+| Secção | Definições |
+|---|---|
+| Aspeto | Cor principal e secundária (vazio = seguir o tema do WHMCS), com pré-visualização; idioma (automático, inglês, português). |
+| Secções da área de cliente | Utilização, SSL, webmail, phpMyAdmin, WordPress, backups, tamanho dos backups, cartões informativos. As secções escondidas não são pedidas ao Enhance. |
+| Listagem e desempenho | Websites por página (1-50), backups mostrados por website (1-30), cache em segundos (0-3600, 0 = desligada). |
+| Restauro de backups | Interruptor geral; o restauro também precisa da opção em cada produto e é reservado ao titular da conta. |
+
+As definições ficam na base de dados do WHMCS (`mod_enhance_settings`), por isso as atualizações do módulo
+mantêm-nas. Para forçar uma definição a partir dos ficheiros, retire o comentário da respetiva constante em
+`modules/servers/enhance/config.php`; passa a aparecer bloqueada no separador Definições.
 
 ## Separador do serviço (administração)
 
@@ -116,8 +130,8 @@ copiar esta versão.
 ## Idioma
 
 Segue o WHMCS: idioma do administrador no admin e idioma do visitante na área de cliente (qualquer
-variante `portuguese*` usa português europeu; as restantes usam inglês). Para forçar um idioma, defina
-`ENHANCE_LANGUAGE` em `config.php`. O modelo de email **Enhance Panel Access** é criado em inglês com
+variante `portuguese*` usa português europeu; as restantes usam inglês). Para forçar um idioma, escolha-o
+no separador Definições. O modelo de email **Enhance Panel Access** é criado em inglês com
 tradução `portuguese-pt`. Campos: `{$panel_url}`, `{$login_email}`, `{$new_login}`.
 
 ## API

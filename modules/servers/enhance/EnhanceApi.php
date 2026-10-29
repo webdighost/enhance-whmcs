@@ -21,6 +21,7 @@ if (!defined('WHMCS')) {
 }
 
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/EnhanceSettings.php';
 require_once __DIR__ . '/EnhanceLang.php';
 require_once __DIR__ . '/EnhanceStore.php';
 

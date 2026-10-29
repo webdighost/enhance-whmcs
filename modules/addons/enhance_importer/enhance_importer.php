@@ -1,10 +1,11 @@
 <?php
 /**
- * Enhance Importer for WHMCS (v1.4.0)
+ * Enhance Manager for WHMCS (v1.4.0) - addon folder "enhance_importer"
  *
  * Imports Enhance plans as WHMCS products and existing Enhance subscriptions
- * as WHMCS services, and runs the status synchronisation on demand.
- * Texts are translated through EnhanceLang (keys "imp.*").
+ * as WHMCS services, runs the status synchronisation on demand and manages
+ * the module settings (client area appearance and sections).
+ * Texts are translated through EnhanceLang (keys "imp.*" and "set.*").
  */
 
 if (!defined('WHMCS')) {
@@ -18,6 +19,7 @@ require_once dirname(__FILE__, 3) . '/servers/enhance/EnhanceSync.php';
 require_once __DIR__ . '/lib/packages.php';
 require_once __DIR__ . '/lib/services.php';
 require_once __DIR__ . '/lib/sync.php';
+require_once __DIR__ . '/lib/settings.php';
 
 function enhance_importer_config(): array
 {
@@ -54,6 +56,7 @@ function enhance_importer_upgrade(array $vars): void
 
 function enhance_importer_ensure_schema(): void
 {
+    EnhanceSettings::ensureTable();
     $schema = Capsule::schema();
     if (!$schema->hasTable('mod_enhance_package_map')) {
         $schema->create('mod_enhance_package_map', function ($table) {
@@ -109,7 +112,7 @@ function enhance_importer_output(array $vars): void
 
     $moduleLink = $vars['modulelink'];
     $tab = (string) ($_REQUEST['tab'] ?? 'packages');
-    if (!in_array($tab, ['packages', 'services', 'sync'], true)) $tab = 'packages';
+    if (!in_array($tab, ['packages', 'services', 'sync', 'settings'], true)) $tab = 'packages';
 
     $servers      = Capsule::table('tblservers')->where('type', 'enhance')->where('disabled', 0)->orderBy('name')->get();
     $groups       = Capsule::table('tblproductgroups')->orderBy('order')->orderBy('name')->get();
@@ -126,6 +129,17 @@ function enhance_importer_output(array $vars): void
     echo enhance_importer_tabs($moduleLink, $tab, $selectedServerId, $selectedGroupId, $selectedServerGroupId);
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['enhance_importer_action']) && !enhance_importer_valid_post((string) $_POST['enhance_importer_action'])) {
         echo enhance_importer_alert('danger', enhance_importer_t('imp.bad_token'));
+    }
+
+    // Settings need no Enhance server or API call.
+    if ($tab === 'settings') {
+        try {
+            enhance_importer_settings_page($moduleLink);
+        } catch (Throwable $e) {
+            echo enhance_importer_alert('danger', enhance_importer_t('imp.error', ['detail' => $e->getMessage()]));
+        }
+        echo '</div>';
+        return;
     }
 
     if ($servers->isEmpty()) {
@@ -160,6 +174,7 @@ function enhance_importer_tabs(string $moduleLink, string $active, int $serverId
         'packages' => EnhanceLang::t('imp.tab_packages'),
         'services' => EnhanceLang::t('imp.tab_services'),
         'sync'     => EnhanceLang::t('imp.tab_sync'),
+        'settings' => EnhanceLang::t('imp.tab_settings'),
     ];
     $html = '<ul class="nav nav-tabs" style="margin:15px 0;">';
     foreach ($tabs as $key => $label) {

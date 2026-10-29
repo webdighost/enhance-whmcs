@@ -1,6 +1,14 @@
 <?php
 /**
- * Enhance WHMCS Module - configuration (v1.4.0)
+ * Enhance WHMCS Module - configuration overrides (v1.4.0)
+ *
+ * The client area and language settings are managed in
+ *   Addons > Enhance Manager > Settings
+ * and stored in the WHMCS database, so module updates never overwrite them.
+ *
+ * To force a setting (for example on several WHMCS installations managed from
+ * the same files), uncomment its line below. A forced setting is shown as locked
+ * in the Settings tab.
  *
  * API calls are recorded in Utilities > Logs > Module Log when module logging
  * is enabled in WHMCS. Tokens and generated passwords are always masked.
@@ -10,39 +18,28 @@ if (!defined('WHMCS')) {
     die('This file cannot be accessed directly.');
 }
 
-/**
- * Debug mode (reserved; API calls are written to the WHMCS Module Log).
- */
+/** Debug mode (reserved; API calls are written to the WHMCS Module Log). */
 if (!defined('ENHANCE_DEBUG')) define('ENHANCE_DEBUG', false);
 
-/**
- * Interface language.
- *
- * Leave empty to follow WHMCS: the administrator's language in the admin area
- * and the visitor's language in the client area. Set to 'english' or
- * 'portuguese-pt' to force one language everywhere.
- */
-if (!defined('ENHANCE_LANGUAGE')) define('ENHANCE_LANGUAGE', '');
+// Appearance ('' = follow the active WHMCS theme / follow WHMCS for the language)
+// define('ENHANCE_COLOR_PRIMARY', '#17b8b0');
+// define('ENHANCE_COLOR_SECONDARY', '');
+// define('ENHANCE_LANGUAGE', 'portuguese-pt');            // '', 'english' or 'portuguese-pt'
 
-/**
- * Client area colours.
- *
- * Leave both values empty so the client area card follows the colours of the
- * active WHMCS theme (detected from the theme's primary button). Set a hex
- * colour (e.g. '#17b8b0') only to force a specific colour. Without a
- * secondary colour, the gradient uses a darker shade of the primary colour.
- */
-if (!defined('ENHANCE_COLOR_PRIMARY')) define('ENHANCE_COLOR_PRIMARY', '');
-if (!defined('ENHANCE_COLOR_SECONDARY')) define('ENHANCE_COLOR_SECONDARY', '');
+// Client area sections (true = shown)
+// define('ENHANCE_CLIENTAREA_USAGE', true);              // disk and traffic meters
+// define('ENHANCE_CLIENTAREA_SSL', true);
+// define('ENHANCE_CLIENTAREA_WEBMAIL', true);
+// define('ENHANCE_CLIENTAREA_PHPMYADMIN', true);
+// define('ENHANCE_CLIENTAREA_WORDPRESS', true);
+// define('ENHANCE_CLIENTAREA_BACKUPS', true);
+// define('ENHANCE_CLIENTAREA_BACKUP_SIZE', true);
+// define('ENHANCE_CLIENTAREA_FEATURES', true);           // the three information cards and the note
 
-/**
- * Websites per page in the client area. Each website shown loads its tools
- * (SSL, mailboxes, databases, apps, backups) with 5 API calls, cached 5 minutes.
- */
-if (!defined('ENHANCE_CLIENTAREA_WEBSITES_PER_PAGE')) define('ENHANCE_CLIENTAREA_WEBSITES_PER_PAGE', 5);
+// Listing and performance
+// define('ENHANCE_CLIENTAREA_WEBSITES_PER_PAGE', 5);     // 1-50
+// define('ENHANCE_CLIENTAREA_BACKUPS_SHOWN', 5);         // 1-30
+// define('ENHANCE_CLIENTAREA_CACHE_TTL', 300);           // seconds, 0-3600 (0 = no cache)
 
-/**
- * Show the size of each backup in the client area (files + databases + emails
- * as reported by Enhance; empty when Enhance reports 0). Set to false to hide it.
- */
-if (!defined('ENHANCE_CLIENTAREA_BACKUP_SIZE')) define('ENHANCE_CLIENTAREA_BACKUP_SIZE', true);
+// Backup restore by clients (also needs the option in each product)
+// define('ENHANCE_CLIENTAREA_RESTORE', true);
