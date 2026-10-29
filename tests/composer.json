@@ -1,0 +1,13 @@
+{
+    "name": "webdig/enhance-whmcs-tests",
+    "description": "Test harness for the Enhance WHMCS module (not shipped with the module).",
+    "type": "project",
+    "require": {
+        "php": ">=8.1",
+        "illuminate/database": "^10.0",
+        "smarty/smarty": "^4.5"
+    },
+    "config": {
+        "sort-packages": true
+    }
+}
