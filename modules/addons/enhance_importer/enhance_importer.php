@@ -121,7 +121,7 @@ function enhance_importer_output(array $vars): void
     $selectedServerGroupId = (int) ($_REQUEST['servergroupid'] ?? 0);
 
     echo '<div class="container-fluid">';
-    echo '<h2>' . enhance_importer_t('imp.title') . '</h2>';
+    echo '<h2>' . enhance_importer_t('imp.title') . ' <small>v' . enhance_importer_h(EnhanceApi::VERSION) . '</small></h2>';
     echo '<p>' . enhance_importer_t('imp.intro') . '</p>';
     echo enhance_importer_tabs($moduleLink, $tab, $selectedServerId, $selectedGroupId, $selectedServerGroupId);
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['enhance_importer_action']) && !enhance_importer_valid_post((string) $_POST['enhance_importer_action'])) {

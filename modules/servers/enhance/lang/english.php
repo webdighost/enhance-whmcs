@@ -16,7 +16,7 @@ return [
 
     // API / transport
     'api.host_invalid'     => 'Enhance: invalid server Hostname. Enter only the control panel domain (e.g. cp.example.com), without https:// or a path.',
-    'api.org_invalid'      => 'Enhance: the server Username field must contain the UUID of the master organisation (e.g. 1b2c3d4e-0000-4000-8000-1234567890ab). Find it in Enhance > Settings > Access tokens.',
+    'api.org_invalid'      => 'Enhance: the server Username field must contain the UUID of the master organisation (e.g. 1b2c3d4e-0000-4000-8000-1234567890ab). Find it in Enhance > Settings > Access tokens (https://<panel>/settings/access-tokens).',
     'api.token_missing'    => 'Enhance: the API access token is missing. Paste it in the server Access Hash field (or in the Password field, leaving Access Hash empty).',
     'api.server_not_found' => 'Enhance: WHMCS server #:id does not exist or does not use the Enhance module.',
     'api.server_unknown'   => 'Enhance: could not identify the WHMCS server of this panel (the Hostname and Username must match a server of type Enhance).',
@@ -32,10 +32,10 @@ return [
     'api.hint_429'         => 'Too many requests to the Enhance API; try again in a few minutes.',
 
     // Connection test
-    'test.unauthorised'        => 'Enhance rejected the API token (HTTP 401). The token was read from the ":field" field (:length characters after removing spaces and line breaks, starting with ":first"). Enhance > Settings > Access tokens lists every token by its first five characters: if no token of the master organisation starts with ":first", this is not the right token. In Enhance > Settings > Access tokens of the master organisation, check that the token has not expired and, if it is IP restricted, that the public IP address of the WHMCS server is allowed. Otherwise create a new token with the Super Admin role and paste it again (it is shown only once). Detail: :detail',
+    'test.unauthorised'        => 'Enhance rejected the API token (HTTP 401). The token was read from the ":field" field (:length characters after removing spaces and line breaks, starting with ":first"). Enhance > Settings > Access tokens (https://<panel>/settings/access-tokens) lists every token by its first five characters: if no token of the master organisation starts with ":first", this is not the right token. In Enhance > Settings > Access tokens (https://<panel>/settings/access-tokens) of the master organisation, check that the token has not expired and, if it is IP restricted, that the public IP address of the WHMCS server is allowed. Otherwise create a new token with the Super Admin role and paste it again (it is shown only once). Detail: :detail',
     'test.token_in_other_field' => 'The token in the ":used" field is rejected by Enhance, but the token in the ":other" field is valid. Clear the ":used" field (or paste the valid token there) and save the server.',
     'test.forbidden'           => 'The token was accepted but has no permission to read the master organisation (HTTP 403). The token must belong to the master organisation and have the Super Admin role; if it is IP restricted, allow the public IP address of the WHMCS server. Detail: :detail',
-    'test.org_not_found'       => 'Organisation :org was not found with this token (HTTP 404). Check the UUID in the Username field: it must be the organisation that owns the token (Enhance > Settings > Access tokens shows the organisation ID). Detail: :detail',
+    'test.org_not_found'       => 'Organisation :org was not found with this token (HTTP 404). Check the UUID in the Username field: it must be the organisation that owns the token (Enhance > Settings > Access tokens (https://<panel>/settings/access-tokens) shows the organisation ID). Detail: :detail',
     'test.not_enhance'         => 'https://:host/api/version did not answer as an Enhance control panel. Check that the server Hostname is the Enhance control panel domain (the address used to log in to Enhance). Detail: :detail',
     'test.org_mismatch'        => 'Enhance: the response does not match the organisation entered in the Username field.',
     'test.plans_failed'        => 'Enhance: connection valid, but the plans could not be listed: :detail',
@@ -146,6 +146,7 @@ return [
     'tab.error'        => 'Enhance error: :detail',
     'tab.no_websites'  => 'No websites in this subscription.',
     'tab.app_server'   => 'Server',
+    'tab.module_version' => 'Enhance module version',
     'tab.last_action' => 'Last module action',
     'tab.ok' => 'Success',
     'tab.failed' => 'Failed',
@@ -223,7 +224,7 @@ return [
     'widget.suspended'        => 'Organisation suspended.',
     'widget.reactivated'      => 'Organisation reactivated.',
     'widget.unlinked'         => 'Link removed in WHMCS only. The Enhance account was kept.',
-    'widget.server'           => 'Server #:server · :host',
+    'widget.server'           => 'Server #:server · :host · module v:version',
     'widget.owner'            => 'Owner',
     'widget.status'           => 'Status',
     'widget.status_active'    => 'Active',

@@ -1,0 +1,33 @@
+{
+    "schema": "1.0",
+    "type": "whmcs-servers",
+    "name": "enhance",
+    "license": "proprietary",
+    "category": "provisioning",
+    "description": {
+        "name": "Enhance",
+        "tagline": "v1.4.0 · Provisioning, single sign-on and client tools for the Enhance control panel.",
+        "long": "Connects WHMCS to the Enhance control panel through its REST API: creates organisations, owner logins, subscriptions and websites, suspends, terminates and changes plans, and gives clients one-click access to the panel, webmail, phpMyAdmin and WordPress. English and European Portuguese.",
+        "features": [
+            "Create, suspend, unsuspend, terminate (soft or hard) and change plan",
+            "Single sign-on to the Enhance panel as the organisation owner",
+            "Client area: usage, SSL expiry, webmail, phpMyAdmin and WordPress login, backups and optional restore",
+            "Step-by-step connection test and per-service last error",
+            "Per-client lock against duplicate provisioning",
+            "Migrates data from the official Enhance module and earlier versions",
+            "English and European Portuguese"
+        ]
+    },
+    "support": {
+        "homepage": "https://github.com/webdighost/enhance-whmcs",
+        "learn_more": "https://github.com/webdighost/enhance-whmcs#readme",
+        "support_url": "https://github.com/webdighost/enhance-whmcs/issues",
+        "docs_url": "https://github.com/webdighost/enhance-whmcs/blob/main/README.md"
+    },
+    "authors": [
+        {
+            "name": "WebDig Host",
+            "homepage": "https://github.com/webdighost"
+        }
+    ]
+}
