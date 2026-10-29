@@ -14,7 +14,9 @@
 - Every website of the service is listed (1 or 1000), 5 per page, with a domain search; tools are loaded
   only for the websites of the page shown (one API call for the whole list) and never while the
   subscription is suspended. `ENHANCE_CLIENTAREA_WEBSITES_PER_PAGE` in `config.php`.
-- Incremental backups with nothing to copy (0 bytes) are not shown as failed; "no SSL certificate" is
+- Backups show date and time, and the size of the backed up content (files + databases + emails) in
+  B/KB/MB/GB instead of the incremental delta rounded to "0 MB"; empty when Enhance reports 0;
+  `ENHANCE_CLIENTAREA_BACKUP_SIZE` hides it. Incremental backups with nothing to copy are not shown as failed; "no SSL certificate" is
   only shown when Enhance confirms it; WordPress installed in the website root (`public_html`) shows no
   path; WordPress brand icon fixed for Font Awesome 5.
 - Users of the client account need the WHMCS "Single Sign-On" (`productsso`) permission for the

@@ -237,6 +237,18 @@ function _enhance_format_bytes(?int $bytes): string
     return number_format($bytes / 1048576, 0, $dec, $th) . ' MB';
 }
 
+/** Precise size for small values (backups): B, KB, MB or GB, never rounded down to 0. */
+function _enhance_format_size(int $bytes): string
+{
+    $dec = EnhanceLang::t('fmt.decimal');
+    $th  = EnhanceLang::t('fmt.thousands');
+    if ($bytes >= 1073741824) return number_format($bytes / 1073741824, 2, $dec, $th) . ' GB';
+    if ($bytes >= 10485760)   return number_format($bytes / 1048576, 0, $dec, $th) . ' MB';
+    if ($bytes >= 1048576)    return number_format($bytes / 1048576, 1, $dec, $th) . ' MB';
+    if ($bytes >= 1024)       return number_format($bytes / 1024, 0, $dec, $th) . ' KB';
+    return $bytes . ' B';
+}
+
 // =============================================================================
 // Metadata
 // =============================================================================
@@ -813,10 +825,10 @@ function _enhance_pager_links(int $page, int $pages, callable $url): array
 // =============================================================================
 
 /** Date of an Enhance ISO timestamp in the reader's format. */
-function _enhance_format_date(string $iso): string
+function _enhance_format_date(string $iso, bool $withTime = false): string
 {
     $ts = strtotime($iso);
-    return $ts ? date(EnhanceLang::t('fmt.date'), $ts) : '';
+    return $ts ? date(EnhanceLang::t('fmt.date') . ($withTime ? ' H:i' : ''), $ts) : '';
 }
 
 /**
@@ -870,14 +882,17 @@ function _enhance_website_tools(EnhanceApi $api, string $orgId, array $site, arr
     usort($items, fn($a, $b) => strcmp((string) ($b['startedAt'] ?? ''), (string) ($a['startedAt'] ?? '')));
     foreach (array_slice($items, 0, 5) as $backup) {
         $ok = ($backup['homeDirStatus'] ?? '') === 'successful';
-        $size = isset($backup['size']) ? (int) $backup['size'] : 0;
+        // Enhance backups are incremental snapshots: "size" may only be what changed since the
+        // previous one. The backed up content is the sum of its components; "size" is the fallback.
+        $components = (int) ($backup['filesSize'] ?? 0) + (int) ($backup['mysqlDbsSize'] ?? 0) + (int) ($backup['emailsSize'] ?? 0);
+        $size = $components > 0 ? $components : (int) ($backup['size'] ?? 0);
         // An incremental backup with nothing to copy (0 bytes) is not a failure for the client:
         // only backups that wrote data and report a failed component are shown as failed.
         $failed = $size > 0 && in_array('failed', [$backup['homeDirStatus'] ?? '', $backup['mysqlDbsStatus'] ?? '', $backup['emailsStatus'] ?? ''], true);
         $tools['backups'][] = [
             'id'      => (int) ($backup['id'] ?? 0),
-            'date'    => _enhance_format_date((string) ($backup['finishedAt'] ?? $backup['startedAt'] ?? '')),
-            'size'    => $size > 0 ? _enhance_format_bytes($size) : '',
+            'date'    => _enhance_format_date((string) ($backup['finishedAt'] ?? $backup['startedAt'] ?? ''), true),
+            'size'    => $size > 0 && ENHANCE_CLIENTAREA_BACKUP_SIZE ? _enhance_format_size($size) : '',
             'kind'    => EnhanceLang::t('ca.backup_kind_' . (in_array($backup['kind'] ?? '', ['manual', 'automatic', 'archive'], true) ? $backup['kind'] : 'automatic')),
             'ok'      => $ok,
             'failed'  => $failed,

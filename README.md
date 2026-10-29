@@ -98,8 +98,10 @@ page shown (5 calls each) and never while the subscription is suspended. Everyth
   the first administrator.
 - **SSL:** certificate of the primary domain, expiry date and days left (highlighted from 14 days).
   "No SSL certificate" is only shown when Enhance confirms it, never when the query fails.
-- **Backups:** last 5, with type, size and status. An incremental backup with nothing to copy (0 bytes)
-  is never shown as failed and shows no size. Restore (when enabled in the product) restores files
+- **Backups:** last 5, newest first, with date and time, type, size and status. The size is the backed
+  up content (files + databases + emails) in B/KB/MB/GB; it is left empty when Enhance reports 0 and can be
+  hidden with `ENHANCE_CLIENTAREA_BACKUP_SIZE` in `config.php`. A backup with nothing to copy is never
+  shown as failed. Restore (when enabled in the product) restores files
   and databases, optionally all mailboxes; it requires the account owner, a confirmation checkbox and a
   valid CSRF token, accepts only successful backups and is written to the activity log.
 
