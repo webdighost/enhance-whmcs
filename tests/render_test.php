@@ -21,10 +21,12 @@ $check('PT: title, SSL date in d/m/Y, days left', strpos($text($pt), 'Painel de 
 $check('EN: SSL date in Y-m-d', strpos($text($en), 'SSL certificate valid until 2026-11-08') !== false);
 $check('tool links (webmail, phpMyAdmin, WordPress) with encoded parameters', strpos($pt, 'a=WebmailSso&amp;website=abababab-0000-4000-8000-000000000001&amp;email=info%40acme.pt') !== false && strpos($pt, 'a=PhpMyAdminSso') !== false && strpos($pt, 'a=WordpressSso') !== false);
 $check('mailbox without mailbox (forwarder only) not listed', strpos($pt, 'fwd%40acme.pt') === false);
-$check('restore form only for the successful backup, with CSRF token', substr_count($pt, 'name="backup"') === 1 && strpos($pt, 'name="backup" value="7"') !== false && strpos($pt, 'name="token" value="CSRF1"') !== false);
+$check('restore form only for the successful backups, with CSRF token', substr_count($pt, 'name="backup"') === 2 && strpos($pt, 'name="backup" value="7"') !== false && strpos($pt, 'name="token" value="CSRF1"') !== false);
 preg_match('#<table class="wd-enhance-backups">.*?</table>#s', $pt, $tbl);
 $backups = $text($tbl[0] ?? '');
-$check('failed backup with data shows "Falhou" once; 0-byte incremental shows neither "Falhou" nor "0 MB"', substr_count($backups, 'Falhou') === 1 && !preg_match('/(?<![\d,.])0 MB/', $backups) && strpos($backups, '1 MB') !== false, $backups);
+$check('failed backup with data shows "Falhou" once; 0-byte incremental shows neither "Falhou" nor "0 MB"', substr_count($backups, 'Falhou') === 1 && !preg_match('/(?<![\d,.])0 MB/', $backups) && strpos($backups, '1,0 MB') !== false, $backups);
+$check('backup date with time, newest first', strpos($backups, '29/10/2026') !== false && preg_match('#\d{2}/\d{2}/\d{4} \d{2}:\d{2}#', $backups) === 1 && strpos($backups, '29/10/2026') < strpos($backups, '27/10/2026'), $backups);
+$check('backup size = files + databases (50 MB), small delta in KB (300 KB), never "0 MB"', strpos($backups, '50 MB') !== false && strpos($backups, '300 KB') !== false && !preg_match('/(?<![\d,.])0 MB/', $backups), $backups);
 $check('WordPress in the website root: brand icon, no "(/public_html)"', strpos($pt, 'fab fa-wordpress') !== false && strpos($pt, 'public_html') === false);
 $check('WordPress in a subfolder keeps its path', _enhance_app_subfolder('public_html/blog') === '/blog' && _enhance_app_subfolder('blog') === '/blog' && _enhance_app_subfolder('') === '' && _enhance_app_subfolder('/public_html/') === '');
 $check('no restore form when the product option is off', (function () use ($argv) {

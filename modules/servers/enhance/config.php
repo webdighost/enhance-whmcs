@@ -40,3 +40,9 @@ if (!defined('ENHANCE_COLOR_SECONDARY')) define('ENHANCE_COLOR_SECONDARY', '');
  * (SSL, mailboxes, databases, apps, backups) with 5 API calls, cached 5 minutes.
  */
 if (!defined('ENHANCE_CLIENTAREA_WEBSITES_PER_PAGE')) define('ENHANCE_CLIENTAREA_WEBSITES_PER_PAGE', 5);
+
+/**
+ * Show the size of each backup in the client area (files + databases + emails
+ * as reported by Enhance; empty when Enhance reports 0). Set to false to hide it.
+ */
+if (!defined('ENHANCE_CLIENTAREA_BACKUP_SIZE')) define('ENHANCE_CLIENTAREA_BACKUP_SIZE', true);

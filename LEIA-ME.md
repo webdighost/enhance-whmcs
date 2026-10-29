@@ -73,8 +73,10 @@ minutos; os links de acesso só são criados quando o cliente clica.
   ou, na falta dele, com o primeiro administrador.
 - **SSL:** certificado do domínio principal, data de validade e dias que faltam (destacado a partir de 14 dias).
   "Sem certificado SSL" só aparece quando o Enhance o confirma, nunca quando a consulta falha.
-- **Backups:** os últimos 5, com tipo, tamanho e estado. Um backup incremental sem nada para copiar
-  (0 bytes) nunca aparece como falhado nem mostra tamanho. O restauro (se ativo no produto) repõe ficheiros
+- **Backups:** os últimos 5, do mais recente para o mais antigo, com data e hora, tipo, tamanho e estado.
+  O tamanho é o conteúdo copiado (ficheiros + bases de dados + emails) em B/KB/MB/GB; fica vazio quando
+  o Enhance indica 0 e pode ser escondido com `ENHANCE_CLIENTAREA_BACKUP_SIZE` em `config.php`. Um backup
+  sem nada para copiar nunca aparece como falhado. O restauro (se ativo no produto) repõe ficheiros
   e bases de dados e, opcionalmente, todas as caixas de correio. Exige o titular da conta, a caixa de
   confirmação e um token de segurança válido; só aceita backups bem-sucedidos e fica no registo de atividade.
 
