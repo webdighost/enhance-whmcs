@@ -1,5 +1,70 @@
 # Changelog
 
+## 1.4.0 - 2026-10-29
+
+### Client area
+- Direct login buttons per website: **webmail** (Roundcube, per mailbox), **phpMyAdmin** (per database)
+  and **WordPress admin** (the app's default user, otherwise the first administrator). Links are
+  created only when the client clicks, after checking that the website, mailbox, database or app
+  belongs to the service.
+- **SSL certificate** of the primary domain with expiry date and days left (highlighted from 14 days).
+- **Recent backups** (last 5) with date, type, size and status. Optional **restore** by the client
+  (product option, off by default): POST + CSRF token, account owner only, explicit confirmation,
+  successful backups only, optional mailboxes. Restores are written to the activity log.
+- Tools are loaded for up to 5 active websites per service and never while the subscription is suspended.
+- Users of the client account need the WHMCS "Single Sign-On" (`productsso`) permission for the
+  login buttons; restores are reserved to the account owner.
+
+### Products
+- **Server group** option (configoption3, loaded from Enhance): where new websites are created.
+- **Client backup restore** option (configoption4).
+- The service **username** shows the Enhance login email (the organisation owner).
+
+### Admin
+- **Last module action** per service in the service tab (action, result, date) and the **last error**
+  with its message, kept until a newer error.
+- **Link / repair subscription** in the service tab: choose any subscription of the client's
+  organisation (subscriptions linked to other services are shown disabled), or remove the link.
+  Applied when the service is saved, under the per-client lock, after validating the subscription.
+- Logging in to the panel as the client from the admin service page is written to the activity log;
+  admins see the technical reason when it fails.
+
+### Quality
+- Importer split into `lib/packages.php`, `lib/services.php` and `lib/sync.php`.
+- `tests/` with the full test suite (`tests/run.sh`): mock HTTPS Enhance API, real Eloquent on SQLite,
+  real Smarty, real HTTP redirects through `php -S`, and the lock on MySQL/MariaDB.
+- GitHub Actions: syntax on PHP 7.4-8.3, PHPCompatibility 7.4-8.3, tests with MariaDB, package build.
+- `build.sh` builds `dist/enhance-whmcs-<version>.zip`.
+- 39 API calls, all checked against the official OpenAPI specification (orchd 12.26.3).
+
+## 1.3.1 - 2026-10-29
+- Per-client database lock (MySQL `GET_LOCK`) for Create, service import and organisation linking.
+- Logins looked up in the master organisation's realm; HTTP 409 on login creation reuses the login.
+- Client profile panel: organisation search (name or UUID) instead of listing every customer.
+- Importer Existing Services tab: 20 clients per page, 3 API calls per client.
+- Owner created directly with the `Owner` role (Enhance refuses `PUT /owner` and the `Owner` role on
+  member updates to access tokens); owner-less organisations repaired; existing owners never replaced.
+- Migration of the official Enhance module's data (`enhOrgId`, `enhanceSubscriptionId`, `subscriptionId`).
+
+## 1.3.0 - 2026-10-28
+- Authentication: HTML entities decoded, spaces/line breaks/`Bearer ` removed from the token, Password
+  field used when Access Hash is empty, redirects and HTML pages treated as errors, step-by-step
+  Test Connection (public `/version`, 401/403/404, token in the other field, first five characters).
+- English base with a complete European Portuguese translation.
+- Client profile panel buttons no longer submit the whole profile form (nested forms).
+- Profile edits only rename the linked organisation.
+- Password recovery uses only `PUT /login/password-recovery`.
+- Importer: billing cycles in the format `AddOrder` expects.
+- Web-accessible debug log removed.
+
+## 1.2.1 and earlier internal builds
+- Association tables (`mod_enhance_clients`, `mod_enhance_services`) replacing the custom fields,
+  client area overview, usage update and daily synchronisation (no public release).
+
+---
+
+The entries below are the original release notes of the 1.0.x series.
+
 ## Version 1.0.1
 
 ### Fixed

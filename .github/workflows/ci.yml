@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    name: PHP ${{ matrix.php }} syntax
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.0', '8.1', '8.2', '8.3']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: none
+      - name: php -l on every module file
+        run: find modules includes -name '*.php' -print0 | xargs -0 -n1 php -l
+
+  compatibility:
+    name: PHPCompatibility 7.4-8.3
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+      - name: Install PHPCompatibility
+        run: |
+          mkdir -p /tmp/phpcompat && cd /tmp/phpcompat
+          composer require -q --no-interaction phpcompatibility/php-compatibility:^9.3
+          vendor/bin/phpcs --config-set installed_paths /tmp/phpcompat/vendor/phpcompatibility/php-compatibility
+      - name: Check
+        run: /tmp/phpcompat/vendor/bin/phpcs --standard=PHPCompatibility --runtime-set testVersion 7.4-8.3 --extensions=php modules includes
+
+  tests:
+    name: Tests (mock Enhance API, SQLite, MariaDB, Smarty)
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: whmcs_test
+          MARIADB_USER: t
+          MARIADB_PASSWORD: t
+        ports: ['3306:3306']
+        options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=5s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: curl, mbstring, pdo_sqlite, pdo_mysql
+          tools: composer
+      - name: Run tests
+        env:
+          ENHANCE_TEST_MYSQL: '1'
+          ENHANCE_TEST_MYSQL_HOST: 127.0.0.1
+        run: tests/run.sh
+
+  package:
+    name: Build package
+    runs-on: ubuntu-latest
+    needs: [lint, compatibility, tests]
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./build.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: enhance-whmcs
+          path: dist/*.zip
