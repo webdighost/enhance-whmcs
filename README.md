@@ -1,6 +1,6 @@
 # Enhance for WHMCS - v1.4.0
 
-WHMCS server module, importer addon and hooks that connect WHMCS to the
+WHMCS server module, management addon (Enhance Manager) and hooks that connect WHMCS to the
 [Enhance](https://enhance.com) control panel through its REST API.
 English interface with a complete European Portuguese translation.
 No Composer or external libraries are needed in WHMCS.
@@ -23,8 +23,9 @@ backups and (optional) restore.
 
 **Admin:** test connection with step-by-step diagnostics, client profile panel (organisation status,
 suspend/reactivate, password reset link, search and link organisations), service tab (organisation,
-subscription, website, last module action and last error, link/repair the subscription), importer
-addon (Enhance plans to products, existing subscriptions to services, synchronisation).
+subscription, website, last module action and last error, link/repair the subscription), and the
+**Enhance Manager** addon: client area settings, Enhance plans to products, existing subscriptions to
+services, synchronisation.
 
 ## Contents
 
@@ -36,16 +37,18 @@ modules/addons/enhance_importer/                Importer addon
   lib/packages.php       Enhance Plans tab
   lib/services.php       Existing Services tab
   lib/sync.php           Synchronisation tab
+  lib/settings.php       Settings tab
 modules/servers/enhance/                        Server module
   enhance.php            Module functions (provisioning, SSO, client area and tools, admin tab)
   EnhanceApi.php         API client (authentication, transport, diagnostics, all API calls)
   EnhanceStore.php       Associations, migrations, per-client lock, last action per service
   EnhanceSync.php        Status and usage synchronisation
   EnhanceLang.php        Translation loader
+  EnhanceSettings.php    Settings (mod_enhance_settings) and config.php overrides
   lang/english.php       English (source)
   lang/portuguese-pt.php European Portuguese
   templates/clientarea.tpl
-  config.php             Language, client area colours
+  config.php             Optional overrides that lock settings
 tests/                  Test suite (not copied to WHMCS)
 build.sh                Builds dist/enhance-whmcs-<version>.zip
 ```
@@ -54,7 +57,8 @@ build.sh                Builds dist/enhance-whmcs-<version>.zip
 
 1. Copy `includes/` and `modules/` to the WHMCS root, replacing the files. Module and table names
    do not change between versions; associations are kept and new tables are created automatically.
-2. WHMCS > System Settings > Addon Modules: activate **Enhance Importer** and give your admin role access.
+2. WHMCS > System Settings > Addon Modules: activate **Enhance Manager** (folder `enhance_importer`;
+   called Enhance Importer before 1.4.0) and give your admin role access.
 3. Configure the Enhance server (below) and click **Test Connection**.
 
 ### Server
@@ -86,11 +90,11 @@ put your WHMCS password in Password and your username in Username.
 
 ## Client area tools
 
-Every website of the service is listed (1 or 1000), sorted by domain, 5 per page
-(`ENHANCE_CLIENTAREA_WEBSITES_PER_PAGE` in `config.php`), with a domain search when there is more than
-one page. The website list costs one API call; the tools below are loaded only for the websites of the
-page shown (5 calls each) and never while the subscription is suspended. Everything is cached for
-5 minutes; the login links are only created when the client clicks.
+Every website of the service is listed (1 or 1000), sorted by domain, 5 per page by default, with a
+domain search when there is more than one page. The website list costs one API call; the tools below are
+loaded only for the websites of the page shown (up to 5 calls each, only for the sections shown) and never
+while the subscription is suspended. Everything is cached for 5 minutes by default; the login links are
+only created when the client clicks. All of this is configurable in the Settings tab (below).
 
 - **Webmail:** one entry per mailbox where Enhance allows SSO.
 - **phpMyAdmin:** one entry per database.
@@ -100,13 +104,26 @@ page shown (5 calls each) and never while the subscription is suspended. Everyth
   "No SSL certificate" is only shown when Enhance confirms it, never when the query fails.
 - **Backups:** last 5, newest first, with date and time, type, size and status. The size is the backed
   up content (files + databases + emails) in B/KB/MB/GB; it is left empty when Enhance reports 0 and can be
-  hidden with `ENHANCE_CLIENTAREA_BACKUP_SIZE` in `config.php`. A backup with nothing to copy is never
+  hidden in the settings. A backup with nothing to copy is never
   shown as failed. Restore (when enabled in the product) restores files
   and databases, optionally all mailboxes; it requires the account owner, a confirmation checkbox and a
   valid CSRF token, accepts only successful backups and is written to the activity log.
 
 Users of a client account (WHMCS 8 users) need the **Single Sign-On** permission for the login buttons.
 Creating backups is not offered: Enhance runs it as one long request that would exceed PHP limits.
+
+## Settings (Addons > Enhance Manager > Settings)
+
+| Section | Settings |
+|---|---|
+| Appearance | Primary and secondary colour (empty = follow the WHMCS theme), with a live preview; language (automatic, English, Portuguese). |
+| Client area sections | Usage, SSL, webmail, phpMyAdmin, WordPress, backups, backup size, information cards. Hidden sections are not requested from Enhance. |
+| Listing and performance | Websites per page (1-50), backups shown per website (1-30), cache in seconds (0-3600, 0 = off). |
+| Backup restore | Global switch; restore also needs the option in each product and is reserved to the account owner. |
+
+Settings are stored in the WHMCS database (`mod_enhance_settings`), so module updates keep them.
+To force a setting from the files, uncomment its constant in `modules/servers/enhance/config.php`;
+it is then shown as locked in the Settings tab.
 
 ## Admin service tab
 
@@ -141,7 +158,7 @@ this version.
 
 The language follows WHMCS: the administrator's language in the admin area and the visitor's
 language in the client area (any `portuguese*` language uses European Portuguese; others fall back to
-English). Force one with `ENHANCE_LANGUAGE` in `config.php`. To add a language, copy
+English). Force one in the Settings tab. To add a language, copy
 `lang/english.php` to `lang/<whmcs-language-name>.php` and translate the values.
 
 The email template **Enhance Panel Access** is created with an English master and a `portuguese-pt`

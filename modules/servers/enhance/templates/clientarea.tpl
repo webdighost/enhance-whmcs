@@ -498,29 +498,31 @@
             {/if}
         {/if}
 
-        <div class="wd-enhance-feature-grid">
-            <div class="wd-enhance-feature">
-                <i class="fa fa-globe"></i>
-                <strong>{$enhanceLang.feat_websites|escape}</strong>
-                <span>{$enhanceLang.feat_websites_desc|escape}</span>
+        {if $showFeatures}
+            <div class="wd-enhance-feature-grid">
+                <div class="wd-enhance-feature">
+                    <i class="fa fa-globe"></i>
+                    <strong>{$enhanceLang.feat_websites|escape}</strong>
+                    <span>{$enhanceLang.feat_websites_desc|escape}</span>
+                </div>
+
+                <div class="wd-enhance-feature">
+                    <i class="fa fa-envelope"></i>
+                    <strong>{$enhanceLang.feat_email|escape}</strong>
+                    <span>{$enhanceLang.feat_email_desc|escape}</span>
+                </div>
+
+                <div class="wd-enhance-feature">
+                    <i class="fa fa-database"></i>
+                    <strong>{$enhanceLang.feat_db|escape}</strong>
+                    <span>{$enhanceLang.feat_db_desc|escape}</span>
+                </div>
             </div>
 
-            <div class="wd-enhance-feature">
-                <i class="fa fa-envelope"></i>
-                <strong>{$enhanceLang.feat_email|escape}</strong>
-                <span>{$enhanceLang.feat_email_desc|escape}</span>
+            <div class="wd-enhance-note">
+                {$enhanceLang.redirect_note|escape}
             </div>
-
-            <div class="wd-enhance-feature">
-                <i class="fa fa-database"></i>
-                <strong>{$enhanceLang.feat_db|escape}</strong>
-                <span>{$enhanceLang.feat_db_desc|escape}</span>
-            </div>
-        </div>
-
-        <div class="wd-enhance-note">
-            {$enhanceLang.redirect_note|escape}
-        </div>
+        {/if}
     </div>
 </div>
 

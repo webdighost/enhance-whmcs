@@ -8,7 +8,8 @@
  *   lang/portuguese-pt.php (European Portuguese)
  *
  * Language selection, in order:
- *   1. ENHANCE_LANGUAGE in config.php, when set;
+ *   1. the language chosen in Addons > Enhance Manager > Settings (or forced
+ *      with ENHANCE_LANGUAGE in config.php), when not "automatic";
  *   2. admin area: the language of the logged-in administrator;
  *   3. client area: the language chosen by the visitor / client;
  *   4. the WHMCS default language (System Settings > General > Localisation).
@@ -19,6 +20,8 @@
 if (!defined('WHMCS')) {
     die('This file cannot be accessed directly.');
 }
+
+require_once __DIR__ . '/EnhanceSettings.php';
 
 use WHMCS\Database\Capsule;
 
@@ -68,8 +71,14 @@ class EnhanceLang
         if (self::$current !== null) return self::$current;
 
         $wanted = '';
-        if (defined('ENHANCE_LANGUAGE') && ENHANCE_LANGUAGE !== '') {
-            $wanted = (string) ENHANCE_LANGUAGE;
+        $forced = '';
+        try {
+            $forced = (string) EnhanceSettings::get('language');
+        } catch (Throwable $e) {
+            $forced = '';
+        }
+        if ($forced !== '') {
+            $wanted = $forced;
         } elseif (defined('ADMINAREA') || !empty($_SESSION['adminid'])) {
             $wanted = self::adminLanguage();
         } else {

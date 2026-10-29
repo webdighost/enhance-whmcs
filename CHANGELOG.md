@@ -36,6 +36,13 @@
 - Logging in to the panel as the client from the admin service page is written to the activity log;
   admins see the technical reason when it fails.
 
+### Enhance Manager (settings)
+- The importer addon is now **Enhance Manager** (same folder and tables) with a new **Settings** tab:
+  colours with live preview, language, visible client area sections, websites per page, backups shown,
+  cache time and a global backup restore switch. Hidden sections are not requested from Enhance.
+- Settings are stored in `mod_enhance_settings`, so updates keep them; `config.php` no longer sets
+  defaults and only holds optional overrides, shown as locked in the Settings tab.
+
 ### WHMCS integration
 - `whmcs.json` for the server module and the importer addon: name, description, features, authors and
   support links in WHMCS > Apps & Integrations, with the module version in the description.

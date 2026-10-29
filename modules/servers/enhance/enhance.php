@@ -160,6 +160,9 @@ function _enhance_track(array $params, string $action, string $result): string
 /** WHMCS TransientData cache (shared across web nodes); silently disabled when unavailable. */
 function _enhance_cache_get(string $key, int $ttl, callable $fetch)
 {
+    if ($ttl <= 0) {
+        return $fetch(); // cache disabled in the settings
+    }
     $store = class_exists('WHMCS\\TransientData') ? \WHMCS\TransientData::getInstance() : null;
     $key = 'enhance_' . md5($key);
     if ($store) {
@@ -678,17 +681,21 @@ function enhance_ClientArea(array $params): array
     $baseUrl   = $pageUrl . '?action=productdetails&id=' . $serviceId;
     $ssoUrl    = $baseUrl . '&dosinglesignon=1';
     $language  = EnhanceLang::current();
-    $perPage   = max(1, (int) (defined('ENHANCE_CLIENTAREA_WEBSITES_PER_PAGE') ? ENHANCE_CLIENTAREA_WEBSITES_PER_PAGE : 5));
+    $perPage   = (int) EnhanceSettings::get('websites_per_page');
+    $ttl       = (int) EnhanceSettings::get('cache_ttl');
+    $showUsage = (bool) EnhanceSettings::get('show_usage');
+    $anyTool   = EnhanceSettings::get('show_ssl') || EnhanceSettings::get('show_webmail') || EnhanceSettings::get('show_phpmyadmin')
+        || EnhanceSettings::get('show_wordpress') || EnhanceSettings::get('show_backups');
     $search    = mb_substr(trim((string) ($_GET['enhsearch'] ?? '')), 0, 100);
     $page      = max(1, (int) ($_GET['enhpage'] ?? 1));
 
     $overview = ['websites' => [], 'disk' => null, 'bandwidth' => null, 'available' => false];
     $sites = ['items' => [], 'total' => 0, 'page' => 1, 'pages' => 1, 'links' => [], 'search' => $search, 'searchable' => false];
     try {
-        $gen = _enhance_clientarea_gen($serviceId);
+        $gen = _enhance_clientarea_gen($serviceId) . _enhance_clientarea_settings_key();
         // 1. Usage and the list of ALL websites: 1 call for the list, whatever its size.
         //    Cached per language because sizes are formatted for the reader.
-        $overview = _enhance_cache_get('clientarea_' . $serviceId . '_' . $language . '_' . $gen, 300, function () use ($params) {
+        $overview = _enhance_cache_get('clientarea_' . $serviceId . '_' . $language . '_' . $gen, $ttl, function () use ($params, $showUsage) {
             $empty = ['websites' => [], 'disk' => null, 'bandwidth' => null, 'available' => false];
             $api   = _enhance_api($params);
             $orgId = $api->getClientOrgId(_enhance_client_id($params));
@@ -727,7 +734,10 @@ function enhance_ClientArea(array $params): array
 
             $disk      = EnhanceApi::resourceUsage($sub, 'diskspace');
             $transfer  = EnhanceApi::resourceUsage($sub, 'transfer');
-            $bandwidth = $api->getSubscriptionBandwidth($orgId, $subId);
+            $bandwidth = $showUsage ? $api->getSubscriptionBandwidth($orgId, $subId) : null;
+            if (!$showUsage) {
+                $disk = $transfer = ['usage' => null, 'total' => null];
+            }
 
             return [
                 'websites'  => $websites,
@@ -752,9 +762,9 @@ function enhance_ClientArea(array $params): array
             if ($w['active'] && $w['id'] !== '') $toolSites[$w['id']] = $w['domain'];
         }
         $tools = [];
-        if ($toolSites && empty($overview['suspended'])) {
+        if ($toolSites && $anyTool && empty($overview['suspended'])) {
             $key = 'clientarea_tools_' . $serviceId . '_' . $language . '_' . $gen . '_' . md5(implode(',', array_keys($toolSites)));
-            $tools = _enhance_cache_get($key, 300, function () use ($params, $toolSites) {
+            $tools = _enhance_cache_get($key, $ttl, function () use ($params, $toolSites) {
                 $api   = _enhance_api($params);
                 $orgId = (string) $api->getClientOrgId(_enhance_client_id($params));
                 $out = ['available' => true];
@@ -797,8 +807,9 @@ function enhance_ClientArea(array $params): array
             'enhance'        => $overview,
             'enhanceLang'    => EnhanceLang::group('ca.'),
             // Empty = follow the active theme colours (detected in the template).
-            'colorPrimary'   => _enhance_hex_color(defined('ENHANCE_COLOR_PRIMARY') ? ENHANCE_COLOR_PRIMARY : ''),
-            'colorSecondary' => _enhance_hex_color(defined('ENHANCE_COLOR_SECONDARY') ? ENHANCE_COLOR_SECONDARY : ''),
+            'colorPrimary'   => _enhance_hex_color((string) EnhanceSettings::get('color_primary')),
+            'colorSecondary' => _enhance_hex_color((string) EnhanceSettings::get('color_secondary')),
+            'showFeatures'   => (bool) EnhanceSettings::get('show_features'),
         ],
     ];
 }
@@ -841,7 +852,8 @@ function _enhance_website_tools(EnhanceApi $api, string $orgId, array $site, arr
     $primary   = strtolower((string) ($site['domain']['domain'] ?? ''));
     $tools = ['ssl' => null, 'ssl_known' => false, 'mailboxes' => [], 'databases' => [], 'wordpress' => [], 'backups' => []];
 
-    $ssl = $api->getWebsiteSsl($orgId, $websiteId);
+    // Only the tools enabled in Addons > Enhance Manager > Settings call the API.
+    $ssl = EnhanceSettings::get('show_ssl') ? $api->getWebsiteSsl($orgId, $websiteId) : ['items' => [], 'code' => 'disabled'];
     // "No certificate" is only stated when Enhance answered; an API error shows nothing.
     $tools['ssl_known'] = !EnhanceApi::isError($ssl);
     foreach ((array) ($ssl['items'] ?? []) as $mapping) {
@@ -859,28 +871,28 @@ function _enhance_website_tools(EnhanceApi $api, string $orgId, array $site, arr
         ];
     }
 
-    $emails = $api->listWebsiteEmails($orgId, $websiteId);
+    $emails = EnhanceSettings::get('show_webmail') ? $api->listWebsiteEmails($orgId, $websiteId) : [];
     foreach ((array) ($emails['items'] ?? []) as $email) {
         if (empty($email['hasMailbox']) || (isset($email['ssoAvailable']) && !$email['ssoAvailable'])) continue;
         $tools['mailboxes'][] = (string) $email['address'];
     }
 
-    $dbs = $api->listWebsiteDatabases($orgId, $websiteId);
+    $dbs = EnhanceSettings::get('show_phpmyadmin') ? $api->listWebsiteDatabases($orgId, $websiteId) : [];
     foreach ((array) ($dbs['items'] ?? []) as $db) {
         if (!empty($db['name'])) $tools['databases'][] = (string) $db['name'];
     }
 
-    $apps = $api->listWebsiteApps($orgId, $websiteId);
+    $apps = EnhanceSettings::get('show_wordpress') ? $api->listWebsiteApps($orgId, $websiteId) : [];
     foreach ((array) ($apps['items'] ?? []) as $app) {
         if (($app['app'] ?? '') === 'wordpress' && !empty($app['id'])) {
             $tools['wordpress'][] = ['id' => (string) $app['id'], 'path' => _enhance_app_subfolder((string) ($app['path'] ?? ''))];
         }
     }
 
-    $backups = $api->listWebsiteBackups($orgId, $websiteId);
+    $backups = EnhanceSettings::get('show_backups') ? $api->listWebsiteBackups($orgId, $websiteId) : [];
     $items = (array) ($backups['items'] ?? []);
     usort($items, fn($a, $b) => strcmp((string) ($b['startedAt'] ?? ''), (string) ($a['startedAt'] ?? '')));
-    foreach (array_slice($items, 0, 5) as $backup) {
+    foreach (array_slice($items, 0, (int) EnhanceSettings::get('backups_shown')) as $backup) {
         $ok = ($backup['homeDirStatus'] ?? '') === 'successful';
         // Enhance backups are incremental snapshots: "size" may only be what changed since the
         // previous one. The backed up content is the sum of its components; "size" is the fallback.
@@ -892,7 +904,7 @@ function _enhance_website_tools(EnhanceApi $api, string $orgId, array $site, arr
         $tools['backups'][] = [
             'id'      => (int) ($backup['id'] ?? 0),
             'date'    => _enhance_format_date((string) ($backup['finishedAt'] ?? $backup['startedAt'] ?? ''), true),
-            'size'    => $size > 0 && ENHANCE_CLIENTAREA_BACKUP_SIZE ? _enhance_format_size($size) : '',
+            'size'    => $size > 0 && EnhanceSettings::get('show_backup_size') ? _enhance_format_size($size) : '',
             'kind'    => EnhanceLang::t('ca.backup_kind_' . (in_array($backup['kind'] ?? '', ['manual', 'automatic', 'archive'], true) ? $backup['kind'] : 'automatic')),
             'ok'      => $ok,
             'failed'  => $failed,
@@ -916,9 +928,20 @@ function _enhance_app_subfolder(string $path): string
     return $path === '' ? '' : '/' . $path;
 }
 
+/** Restore needs the product option and the global switch in the settings (and backups shown). */
 function _enhance_restore_allowed(array $params): bool
 {
-    return in_array(strtolower((string) ($params['configoption4'] ?? '')), ['on', 'yes', '1'], true);
+    return EnhanceSettings::get('restore_enabled') && EnhanceSettings::get('show_backups')
+        && in_array(strtolower((string) ($params['configoption4'] ?? '')), ['on', 'yes', '1'], true);
+}
+
+/** Settings that change what the client area shows: part of every client area cache key. */
+function _enhance_clientarea_settings_key(): string
+{
+    $keys = ['show_usage', 'show_ssl', 'show_webmail', 'show_phpmyadmin', 'show_wordpress', 'show_backups', 'show_backup_size', 'backups_shown'];
+    $values = [];
+    foreach ($keys as $k) $values[] = EnhanceSettings::get($k);
+    return substr(md5(json_encode($values)), 0, 8);
 }
 
 /**
