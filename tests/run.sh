@@ -53,7 +53,9 @@ ENHANCE_WEB_PORT=18500 $PHP -S 127.0.0.1:18500 support/tools_router.php >/dev/nu
 sleep 1
 out=$(./client_tools_test.sh); echo "$out"; echo "$out" | grep -q "ALL PASSED" || failed=$((failed + 1))
 kill "$WEB" 2>/dev/null; WEB=""
-if grep -E -i "fatal|warning|notice|deprecated" "$TMP/web.log"; then failed=$((failed + 1)); fi
+# PHP errors raised by the module (startup messages such as "in Unknown on line 0" come from the
+# PHP build, e.g. the JIT being disabled by a coverage extension on CI, and are ignored).
+if grep -E -i "fatal|warning|notice|deprecated" "$TMP/web.log" | grep -v "in Unknown on line 0"; then failed=$((failed + 1)); fi
 stop_mock
 
 if [ "${ENHANCE_TEST_MYSQL:-}" = "1" ]; then
