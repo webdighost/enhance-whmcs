@@ -86,15 +86,20 @@ put your WHMCS password in Password and your username in Username.
 
 ## Client area tools
 
-Shown for up to 5 active websites of the service, never while the subscription is suspended.
-The data is cached for 5 minutes; the login links are only created when the client clicks.
+Every website of the service is listed (1 or 1000), sorted by domain, 5 per page
+(`ENHANCE_CLIENTAREA_WEBSITES_PER_PAGE` in `config.php`), with a domain search when there is more than
+one page. The website list costs one API call; the tools below are loaded only for the websites of the
+page shown (5 calls each) and never while the subscription is suspended. Everything is cached for
+5 minutes; the login links are only created when the client clicks.
 
 - **Webmail:** one entry per mailbox where Enhance allows SSO.
 - **phpMyAdmin:** one entry per database.
 - **WordPress admin:** per WordPress installation; logs in as the app's default user, otherwise
   the first administrator.
 - **SSL:** certificate of the primary domain, expiry date and days left (highlighted from 14 days).
-- **Backups:** last 5, with type, size and status. Restore (when enabled in the product) restores files
+  "No SSL certificate" is only shown when Enhance confirms it, never when the query fails.
+- **Backups:** last 5, with type, size and status. An incremental backup with nothing to copy (0 bytes)
+  is never shown as failed and shows no size. Restore (when enabled in the product) restores files
   and databases, optionally all mailboxes; it requires the account owner, a confirmation checkbox and a
   valid CSRF token, accepts only successful backups and is written to the activity log.
 

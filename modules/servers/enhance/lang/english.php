@@ -199,6 +199,12 @@ return [
     'ca.restore_disabled' => 'Backup restore is not available for this service.',
     'ca.restore_confirm_required' => 'Confirm that the current files and databases will be replaced.',
     'ca.restore_failed' => 'The restore could not be started: :detail',
+    'ca.websites_count' => ':total websites',
+    'ca.search_domain' => 'Search domain',
+    'ca.search' => 'Search',
+    'ca.search_none' => 'No website matches ":term".',
+    'ca.pages' => 'Pages',
+    'ca.page_info' => 'Page :page of :pages',
     'ca.redirect_note'      => 'You will be securely redirected to your control panel.',
 
     // Email template "Enhance Panel Access" (created once; edit it in WHMCS > Email Templates)

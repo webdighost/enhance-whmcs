@@ -61,15 +61,20 @@ pode pôr a sua palavra-passe do WHMCS no campo Password e o seu utilizador no U
 
 ## Ferramentas na área de cliente
 
-Aparecem para até 5 websites ativos do serviço e nunca com a subscrição suspensa. Os dados ficam em
-cache 5 minutos; os links de acesso só são criados quando o cliente clica.
+Todos os websites do serviço são listados (1 ou 1000), por ordem de domínio, 5 por página
+(`ENHANCE_CLIENTAREA_WEBSITES_PER_PAGE` em `config.php`), com pesquisa por domínio quando há mais de uma
+página. A lista de websites custa um pedido à API; as ferramentas abaixo são carregadas só para os
+websites da página visível (5 pedidos cada) e nunca com a subscrição suspensa. Tudo fica em cache 5
+minutos; os links de acesso só são criados quando o cliente clica.
 
 - **Webmail:** uma entrada por caixa de correio em que o Enhance permite SSO.
 - **phpMyAdmin:** uma entrada por base de dados.
 - **Administração WordPress:** por instalação de WordPress; entra com o utilizador definido na aplicação
   ou, na falta dele, com o primeiro administrador.
 - **SSL:** certificado do domínio principal, data de validade e dias que faltam (destacado a partir de 14 dias).
-- **Backups:** os últimos 5, com tipo, tamanho e estado. O restauro (se ativo no produto) repõe ficheiros
+  "Sem certificado SSL" só aparece quando o Enhance o confirma, nunca quando a consulta falha.
+- **Backups:** os últimos 5, com tipo, tamanho e estado. Um backup incremental sem nada para copiar
+  (0 bytes) nunca aparece como falhado nem mostra tamanho. O restauro (se ativo no produto) repõe ficheiros
   e bases de dados e, opcionalmente, todas as caixas de correio. Exige o titular da conta, a caixa de
   confirmação e um token de segurança válido; só aceita backups bem-sucedidos e fica no registo de atividade.
 

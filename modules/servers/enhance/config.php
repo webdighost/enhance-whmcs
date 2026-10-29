@@ -34,3 +34,9 @@ if (!defined('ENHANCE_LANGUAGE')) define('ENHANCE_LANGUAGE', '');
  */
 if (!defined('ENHANCE_COLOR_PRIMARY')) define('ENHANCE_COLOR_PRIMARY', '');
 if (!defined('ENHANCE_COLOR_SECONDARY')) define('ENHANCE_COLOR_SECONDARY', '');
+
+/**
+ * Websites per page in the client area. Each website shown loads its tools
+ * (SSL, mailboxes, databases, apps, backups) with 5 API calls, cached 5 minutes.
+ */
+if (!defined('ENHANCE_CLIENTAREA_WEBSITES_PER_PAGE')) define('ENHANCE_CLIENTAREA_WEBSITES_PER_PAGE', 5);

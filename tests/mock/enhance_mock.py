@@ -55,7 +55,10 @@ class H(BaseHTTPRequestHandler):
         if p==f'/api/orgs/{CUST}/subscriptions/6': return self.send(200, {'id':6,'planId':2,'planName':'Pro','subscriberId':CUST,'vendorId':MASTER,'status':'active','resources':[]})
         if p==f'/api/orgs/{CUST}/subscriptions/5' and self.command=='PATCH': return self.send(500, {'code':'internal','detail':'Server error'})
         if p==f'/api/orgs/{CUST}/subscriptions/5': return self.send(200, {'id':5,'planId':1,'planName':'Basic','subscriberId':CUST,'vendorId':MASTER,'status':'active','resources':[{'name':'diskspace','usage':1073741824,'total':10737418240}]})
-        if p==f'/api/orgs/{CUST}/websites' and self.command=='GET': return self.send(200, {'items':[site],'total':1})
+        if p==f'/api/orgs/{CUST}/websites' and self.command=='GET':
+            # acme.pt plus 11 more websites, to test the client area pagination
+            extra=[{'id':'abababab-0000-4000-8000-%012d'%(100+i),'domain':{'domain':'site%02d.pt'%i},'subscriptionId':5,'status':'active','kind':'normal','phpVersion':'php82'} for i in range(1,12)]
+            return self.send(200, {'items':[site]+extra,'total':12})
         if p==W: return self.send(200, site)
         if p==W+'/domains': return self.send(200, {'items':[{'domain':'acme.pt','mappingKind':'primary','cert':{'cn':'acme.pt','issuer':"Let's Encrypt",'issued':'2026-10-01T00:00:00Z','expires':'2026-11-08T00:00:00Z','sans':[],'forceHttps':True}}]})
         if p==W+'/emails': return self.send(200, {'items':[{'address':'info@acme.pt','hasMailbox':True,'ssoAvailable':True,'status':'active','aliases':[]},{'address':'fwd@acme.pt','hasMailbox':False,'status':'active','aliases':[]}],'total':2})
@@ -63,10 +66,10 @@ class H(BaseHTTPRequestHandler):
             self.send_response(302); self.send_header('Location','https://cp.test/roundcube/?_sso=abc'); self.send_header('Content-Length','0'); self.end_headers(); return
         if p==W+'/mysql-dbs': return self.send(200, {'items':[{'name':'acme_wp','size':1,'createdAt':'x','userCount':1}]})
         if p==W+'/mysql-dbs/acme_wp/sso': return self.send(200, 'https://cp.test/phpmyadmin/?sso=1')
-        if p==W+'/apps': return self.send(200, {'items':[{'id':APP,'app':'wordpress','version':'6.6'}]})
+        if p==W+'/apps': return self.send(200, {'items':[{'id':APP,'app':'wordpress','version':'6.6','path':'public_html'}]})
         if p==W+f'/apps/{APP}/wordpress/users': return self.send(200, {'items':[{'id':1,'login':'editor','email':'e@acme.pt','role':'editor'},{'id':2,'login':'admin','email':'a@acme.pt','role':'administrator'}]})
         if p==W+f'/apps/{APP}/wordpress/users/2/sso': return self.send(200, 'https://acme.pt/wp-admin/?sso=2')
-        if p==W+'/backups': return self.send(200, {'items':[{'id':7,'startedAt':'2026-10-27T03:00:00Z','finishedAt':'2026-10-27T03:10:00Z','size':52428800,'homeDirStatus':'successful','kind':'automatic','storageKind':'enhance','snapshotDirName':'a'},{'id':8,'startedAt':'2026-10-28T03:00:00Z','finishedAt':'2026-10-28T03:05:00Z','homeDirStatus':'failed','kind':'automatic','storageKind':'enhance','snapshotDirName':'b'}]})
+        if p==W+'/backups': return self.send(200, {'items':[{'id':7,'startedAt':'2026-10-27T03:00:00Z','finishedAt':'2026-10-27T03:10:00Z','size':52428800,'homeDirStatus':'successful','kind':'automatic','storageKind':'enhance','snapshotDirName':'a'},{'id':8,'startedAt':'2026-10-28T03:00:00Z','finishedAt':'2026-10-28T03:05:00Z','size':1048576,'homeDirStatus':'failed','kind':'automatic','storageKind':'enhance','snapshotDirName':'b'},{'id':9,'startedAt':'2026-10-29T03:00:00Z','finishedAt':'2026-10-29T03:00:05Z','size':0,'homeDirStatus':'failed','kind':'automatic','storageKind':'enhance','snapshotDirName':'c'}]})
         if p==W+'/backups/7' and self.command=='PUT': STATE['restored']=json.loads(body or b'{}'); return self.send(200, b'', 'text/plain')
         if p=='/api/servers/groups': return self.send(200, {'items':[{'id':'efefefef-0000-4000-8000-000000000001','name':'Lisboa','serverCount':3,'createdAt':'x'}]})
         if p=='/api/__state': return self.send(200, {k:v for k,v in STATE.items() if k!='members'})

@@ -11,7 +11,12 @@
 - **Recent backups** (last 5) with date, type, size and status. Optional **restore** by the client
   (product option, off by default): POST + CSRF token, account owner only, explicit confirmation,
   successful backups only, optional mailboxes. Restores are written to the activity log.
-- Tools are loaded for up to 5 active websites per service and never while the subscription is suspended.
+- Every website of the service is listed (1 or 1000), 5 per page, with a domain search; tools are loaded
+  only for the websites of the page shown (one API call for the whole list) and never while the
+  subscription is suspended. `ENHANCE_CLIENTAREA_WEBSITES_PER_PAGE` in `config.php`.
+- Incremental backups with nothing to copy (0 bytes) are not shown as failed; "no SSL certificate" is
+  only shown when Enhance confirms it; WordPress installed in the website root (`public_html`) shows no
+  path; WordPress brand icon fixed for Font Awesome 5.
 - Users of the client account need the WHMCS "Single Sign-On" (`productsso`) permission for the
   login buttons; restores are reserved to the account owner.
 

@@ -199,6 +199,12 @@ return [
     'ca.restore_disabled' => 'O restauro de backups não está disponível para este serviço.',
     'ca.restore_confirm_required' => 'Confirme que os ficheiros e bases de dados atuais serão substituídos.',
     'ca.restore_failed' => 'Não foi possível iniciar o restauro: :detail',
+    'ca.websites_count' => ':total websites',
+    'ca.search_domain' => 'Pesquisar domínio',
+    'ca.search' => 'Pesquisar',
+    'ca.search_none' => 'Nenhum website corresponde a ":term".',
+    'ca.pages' => 'Páginas',
+    'ca.page_info' => 'Página :page de :pages',
     'ca.redirect_note'      => 'Será redirecionado em segurança para o seu painel de alojamento.',
 
     // Modelo de email "Enhance Panel Access" (criado uma vez; edite-o em WHMCS > Modelos de Email)
