@@ -1116,7 +1116,7 @@ function _enhance_admin_tab_maintenance(array $params): array
 {
     $h = fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
     $serviceId = (int) $params['serviceid'];
-    $out = [];
+    $out = [EnhanceLang::t('tab.module_version') => 'v' . $h(EnhanceApi::VERSION)];
 
     $event = EnhanceStore::lastEvent($serviceId);
     if ($event) {

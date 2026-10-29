@@ -173,7 +173,7 @@ add_hook('AdminClientProfileTabFields', 1, function (array $vars): array {
 
     $token   = (string) generate_token('plain');
     $content = $feedback;
-    $serverLabel = htmlspecialchars(EnhanceLang::t('widget.server', ['server' => (int) $server->id, 'host' => $api->getHost()]), ENT_QUOTES, 'UTF-8');
+    $serverLabel = htmlspecialchars(EnhanceLang::t('widget.server', ['server' => (int) $server->id, 'host' => $api->getHost(), 'version' => EnhanceApi::VERSION]), ENT_QUOTES, 'UTF-8');
     $content .= <<<HTML
 <div style="background:#372c62;padding:10px 16px;border-radius:6px;margin-bottom:12px;">
     <strong style="color:#fff;font-size:15px;letter-spacing:.3px;">Enhance</strong>

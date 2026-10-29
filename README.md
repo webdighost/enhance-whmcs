@@ -69,7 +69,7 @@ WHMCS > System Settings > Servers > Add New Server, module **Enhance**:
 | Password     | Leave empty (or store the token here, encrypted, and leave Access Hash empty). |
 | Secure       | Ticked. |
 
-Create the token in Enhance > Settings > Access tokens of the **master organisation**, with the
+Create the token in Enhance > Settings > Access tokens (`https://<panel>/settings/access-tokens`) of the **master organisation**, with the
 **Super Admin** role; the token is shown only once. Tokens can have an **expiry date** and an
 **IP restriction**: an expired token, or one that does not allow the public IP address of the WHMCS
 server, is rejected like a wrong token. Watch the browser's autofill on the WHMCS server form: it may

@@ -16,7 +16,7 @@ return [
 
     // API / transporte
     'api.host_invalid'     => 'Enhance: Hostname do servidor inválido. Indique apenas o domínio do painel de controlo (ex.: cp.exemplo.pt), sem https:// nem caminho.',
-    'api.org_invalid'      => 'Enhance: o campo Username do servidor tem de conter o UUID da organização principal (ex.: 1b2c3d4e-0000-4000-8000-1234567890ab). Encontra-o em Enhance > Settings > Access tokens.',
+    'api.org_invalid'      => 'Enhance: o campo Username do servidor tem de conter o UUID da organização principal (ex.: 1b2c3d4e-0000-4000-8000-1234567890ab). Encontra-o em Enhance > Settings > Access tokens (https://<painel>/settings/access-tokens).',
     'api.token_missing'    => 'Enhance: falta o token de acesso à API. Cole-o no campo Access Hash do servidor (ou no campo Password, deixando o Access Hash vazio).',
     'api.server_not_found' => 'Enhance: o servidor WHMCS #:id não existe ou não usa o módulo Enhance.',
     'api.server_unknown'   => 'Enhance: não foi possível identificar o servidor WHMCS deste painel (o Hostname e o Username têm de coincidir com um servidor do tipo Enhance).',
@@ -32,10 +32,10 @@ return [
     'api.hint_429'         => 'Demasiados pedidos à API do Enhance; tente novamente dentro de alguns minutos.',
 
     // Teste de ligação
-    'test.unauthorised'        => 'O Enhance recusou o token da API (HTTP 401). O token foi lido do campo ":field" (:length caracteres depois de remover espaços e quebras de linha, a começar por ":first"). Em Enhance > Settings > Access tokens cada token aparece identificado pelos primeiros cinco caracteres: se nenhum token da organização principal começar por ":first", este não é o token certo. Em Enhance > Settings > Access tokens da organização principal, confirme que o token não expirou e, se tiver restrição de IP, que o endereço IP público do servidor WHMCS está autorizado. Caso contrário, crie um novo token com a função Super Admin e cole-o novamente (só é mostrado uma vez). Detalhe: :detail',
+    'test.unauthorised'        => 'O Enhance recusou o token da API (HTTP 401). O token foi lido do campo ":field" (:length caracteres depois de remover espaços e quebras de linha, a começar por ":first"). Em Enhance > Settings > Access tokens (https://<painel>/settings/access-tokens) cada token aparece identificado pelos primeiros cinco caracteres: se nenhum token da organização principal começar por ":first", este não é o token certo. Em Enhance > Settings > Access tokens (https://<painel>/settings/access-tokens) da organização principal, confirme que o token não expirou e, se tiver restrição de IP, que o endereço IP público do servidor WHMCS está autorizado. Caso contrário, crie um novo token com a função Super Admin e cole-o novamente (só é mostrado uma vez). Detalhe: :detail',
     'test.token_in_other_field' => 'O token do campo ":used" é recusado pelo Enhance, mas o token do campo ":other" é válido. Limpe o campo ":used" (ou cole lá o token válido) e guarde o servidor.',
     'test.forbidden'           => 'O token foi aceite mas não tem permissão para consultar a organização principal (HTTP 403). O token tem de pertencer à organização principal e ter a função Super Admin; se tiver restrição de IP, autorize o endereço IP público do servidor WHMCS. Detalhe: :detail',
-    'test.org_not_found'       => 'A organização :org não foi encontrada com este token (HTTP 404). Verifique o UUID do campo Username: tem de ser a organização dona do token (Enhance > Settings > Access tokens mostra o ID da organização). Detalhe: :detail',
+    'test.org_not_found'       => 'A organização :org não foi encontrada com este token (HTTP 404). Verifique o UUID do campo Username: tem de ser a organização dona do token (Enhance > Settings > Access tokens (https://<painel>/settings/access-tokens) mostra o ID da organização). Detalhe: :detail',
     'test.not_enhance'         => 'https://:host/api/version não respondeu como um painel Enhance. Confirme que o Hostname do servidor é o domínio do painel de controlo Enhance (o endereço usado para entrar no Enhance). Detalhe: :detail',
     'test.org_mismatch'        => 'Enhance: a resposta não corresponde à organização indicada no campo Username.',
     'test.plans_failed'        => 'Enhance: ligação válida, mas não foi possível listar os planos: :detail',
@@ -146,6 +146,7 @@ return [
     'tab.error'        => 'Erro Enhance: :detail',
     'tab.no_websites'  => 'Sem websites nesta subscrição.',
     'tab.app_server'   => 'Servidor',
+    'tab.module_version' => 'Versão do módulo Enhance',
     'tab.last_action' => 'Última ação do módulo',
     'tab.ok' => 'Sucesso',
     'tab.failed' => 'Falhou',
@@ -223,7 +224,7 @@ return [
     'widget.suspended'        => 'Organização suspensa.',
     'widget.reactivated'      => 'Organização reativada.',
     'widget.unlinked'         => 'Associação removida apenas no WHMCS. A conta Enhance foi mantida.',
-    'widget.server'           => 'Servidor #:server · :host',
+    'widget.server'           => 'Servidor #:server · :host · módulo v:version',
     'widget.owner'            => 'Titular',
     'widget.status'           => 'Estado',
     'widget.status_active'    => 'Ativa',

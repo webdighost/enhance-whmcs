@@ -44,7 +44,7 @@ WHMCS > Definições do Sistema > Servidores > Adicionar Novo Servidor, módulo 
 | Password    | Vazio (ou o token aqui, cifrado pelo WHMCS, deixando o Access Hash vazio). |
 | Secure      | Assinalado. |
 
-Crie o token em Enhance > Settings > Access tokens da **organização principal**, com a função
+Crie o token em Enhance > Settings > Access tokens (`https://<painel>/settings/access-tokens`) da **organização principal**, com a função
 **Super Admin**; o token só é mostrado uma vez. Os tokens podem ter **data de validade** e
 **restrição de IP**: um token expirado, ou que não autorize o IP público do servidor WHMCS, é recusado
 tal como um token errado. Atenção ao preenchimento automático do browser no formulário do servidor:

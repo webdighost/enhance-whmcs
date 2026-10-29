@@ -1,0 +1,30 @@
+{
+    "schema": "1.0",
+    "type": "whmcs-addons",
+    "name": "enhance_importer",
+    "license": "proprietary",
+    "category": "utilities",
+    "description": {
+        "name": "Enhance Importer",
+        "tagline": "v1.4.0 · Import Enhance plans and existing subscriptions into WHMCS and keep their status in sync.",
+        "long": "Companion addon of the Enhance server module: imports Enhance plans as WHMCS products, imports subscriptions that already exist in Enhance as WHMCS services (with preview, manual selection and next due date), and runs the daily status synchronisation and the connection test on demand.",
+        "features": [
+            "Import Enhance plans as WHMCS products (hidden for review, no duplicates)",
+            "Import existing Enhance subscriptions as WHMCS services, page by page",
+            "Daily status synchronisation through the WHMCS cron",
+            "Connection test"
+        ]
+    },
+    "support": {
+        "homepage": "https://github.com/webdighost/enhance-whmcs",
+        "learn_more": "https://github.com/webdighost/enhance-whmcs#readme",
+        "support_url": "https://github.com/webdighost/enhance-whmcs/issues",
+        "docs_url": "https://github.com/webdighost/enhance-whmcs/blob/main/README.md"
+    },
+    "authors": [
+        {
+            "name": "WebDig Host",
+            "homepage": "https://github.com/webdighost"
+        }
+    ]
+}

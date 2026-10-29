@@ -38,6 +38,7 @@ run() { # name, command...
     stop_mock
 }
 
+run "WHMCS metadata (whmcs.json)"       $PHP metadata_test.php "$ENHANCE_ROOT"
 run "API client (mock Enhance API)"      $PHP api_test.php "$ENHANCE_ROOT"
 run "Migration (Eloquent/SQLite)"        $PHP migration_test.php "$ENHANCE_ROOT"
 run "Customer sync and importer paging"  $PHP sync_test.php "$ENHANCE_ROOT"

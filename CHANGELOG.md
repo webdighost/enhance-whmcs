@@ -29,6 +29,12 @@
 - Logging in to the panel as the client from the admin service page is written to the activity log;
   admins see the technical reason when it fails.
 
+### WHMCS integration
+- `whmcs.json` for the server module and the importer addon: name, description, features, authors and
+  support links in WHMCS > Apps & Integrations, with the module version in the description.
+- Module version shown in the importer title, the admin service tab and the client profile panel.
+- Messages and documentation point to the exact token page: `https://<panel>/settings/access-tokens`.
+
 ### Quality
 - Importer split into `lib/packages.php`, `lib/services.php` and `lib/sync.php`.
 - `tests/` with the full test suite (`tests/run.sh`): mock HTTPS Enhance API, real Eloquent on SQLite,
