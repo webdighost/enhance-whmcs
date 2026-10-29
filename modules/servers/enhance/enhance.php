@@ -183,11 +183,27 @@ function _enhance_cache_forget(string $key): void
     }
 }
 
-/** Forgets the client area overview of a service, in every language. */
+/**
+ * Client area cache generation of a service: every cached overview, page and
+ * search of the service includes it in its key, so changing it forgets them all.
+ */
+function _enhance_clientarea_gen(int $serviceId): string
+{
+    if (!class_exists('WHMCS\\TransientData')) return '0';
+    $store = \WHMCS\TransientData::getInstance();
+    $gen = $store->retrieve('enhance_ca_gen_' . $serviceId);
+    if (!is_string($gen) || $gen === '') {
+        $gen = bin2hex(random_bytes(4));
+        $store->store('enhance_ca_gen_' . $serviceId, $gen, 30 * 86400);
+    }
+    return $gen;
+}
+
+/** Forgets the client area data of a service (all languages, pages and searches). */
 function _enhance_forget_clientarea(int $serviceId): void
 {
-    foreach (glob(__DIR__ . '/lang/*.php') ?: [] as $file) {
-        _enhance_cache_forget('clientarea_' . $serviceId . '_' . basename($file, '.php'));
+    if (class_exists('WHMCS\\TransientData')) {
+        \WHMCS\TransientData::getInstance()->store('enhance_ca_gen_' . $serviceId, bin2hex(random_bytes(4)), 30 * 86400);
     }
 }
 
@@ -644,14 +660,23 @@ function enhance_AdminLink(array $params): string
 
 function enhance_ClientArea(array $params): array
 {
+    $serviceId = (int) $params['serviceid'];
     $systemUrl = rtrim((string) Setting::getValue('SystemURL'), '/');
-    $ssoUrl    = $systemUrl . '/clientarea.php?action=productdetails&id=' . (int) $params['serviceid'] . '&dosinglesignon=1';
+    $pageUrl   = $systemUrl . '/clientarea.php';
+    $baseUrl   = $pageUrl . '?action=productdetails&id=' . $serviceId;
+    $ssoUrl    = $baseUrl . '&dosinglesignon=1';
     $language  = EnhanceLang::current();
+    $perPage   = max(1, (int) (defined('ENHANCE_CLIENTAREA_WEBSITES_PER_PAGE') ? ENHANCE_CLIENTAREA_WEBSITES_PER_PAGE : 5));
+    $search    = mb_substr(trim((string) ($_GET['enhsearch'] ?? '')), 0, 100);
+    $page      = max(1, (int) ($_GET['enhpage'] ?? 1));
 
     $overview = ['websites' => [], 'disk' => null, 'bandwidth' => null, 'available' => false];
+    $sites = ['items' => [], 'total' => 0, 'page' => 1, 'pages' => 1, 'links' => [], 'search' => $search, 'searchable' => false];
     try {
-        // Cached per language because the sizes are formatted for the reader.
-        $overview = _enhance_cache_get('clientarea_' . (int) $params['serviceid'] . '_' . $language, 300, function () use ($params) {
+        $gen = _enhance_clientarea_gen($serviceId);
+        // 1. Usage and the list of ALL websites: 1 call for the list, whatever its size.
+        //    Cached per language because sizes are formatted for the reader.
+        $overview = _enhance_cache_get('clientarea_' . $serviceId . '_' . $language . '_' . $gen, 300, function () use ($params) {
             $empty = ['websites' => [], 'disk' => null, 'bandwidth' => null, 'available' => false];
             $api   = _enhance_api($params);
             $orgId = $api->getClientOrgId(_enhance_client_id($params));
@@ -661,25 +686,19 @@ function enhance_ClientArea(array $params): array
             $sub = $api->getSubscription($orgId, $subId);
             if (EnhanceApi::isError($sub)) return $empty;
 
-            $suspended = (bool) _enhance_subscription_is_suspended($sub);
             $websites = [];
-            $sites = $api->listWebsitesBySubscription($orgId, $subId);
-            foreach ($sites['items'] ?? [] as $site) {
+            $list = $api->listWebsitesBySubscription($orgId, $subId);
+            foreach ($list['items'] ?? [] as $site) {
                 if (($site['kind'] ?? 'normal') !== 'normal' || ($site['status'] ?? '') === 'deleted') continue;
                 if ((int) ($site['subscriptionId'] ?? 0) !== (int) $subId) continue;
-                $entry = [
+                $websites[] = [
                     'id'     => (string) ($site['id'] ?? ''),
                     'domain' => (string) ($site['domain']['domain'] ?? ''),
                     'active' => ($site['status'] ?? '') === 'active' && empty($site['suspendedBy']),
                     'php'    => _enhance_php_label((string) ($site['phpVersion'] ?? '')),
-                    'tools'  => null,
                 ];
-                // Tools need 5 API calls per website: only for the first websites, never when suspended.
-                if (!$suspended && $entry['active'] && $entry['id'] !== '' && count($websites) < ENHANCE_CLIENTAREA_TOOLS_WEBSITES) {
-                    $entry['tools'] = _enhance_website_tools($api, $orgId, $site, $params);
-                }
-                $websites[] = $entry;
             }
+            usort($websites, fn($a, $b) => strcmp($a['domain'], $b['domain']));
 
             $meter = function (?int $usage, ?int $total): ?array {
                 if ($usage === null) return null;
@@ -703,10 +722,51 @@ function enhance_ClientArea(array $params): array
                 'disk'      => $meter($disk['usage'], $disk['total']),
                 'bandwidth' => $meter($bandwidth ?? $transfer['usage'], $transfer['total']),
                 'plan'      => (string) ($sub['planName'] ?? ''),
-                'suspended' => $suspended,
+                'suspended' => (bool) _enhance_subscription_is_suspended($sub),
                 'available' => true,
             ];
         });
+
+        // 2. Search and pagination over every website.
+        $all = (array) ($overview['websites'] ?? []);
+        $matching = $search === '' ? $all : array_values(array_filter($all, fn($w) => mb_stripos($w['domain'], $search) !== false));
+        $pages = max(1, (int) ceil(count($matching) / $perPage));
+        $page  = min($page, $pages);
+        $items = array_slice($matching, ($page - 1) * $perPage, $perPage);
+
+        // 3. Tools (5 API calls per website) only for the websites of this page.
+        $toolSites = [];
+        foreach ($items as $w) {
+            if ($w['active'] && $w['id'] !== '') $toolSites[$w['id']] = $w['domain'];
+        }
+        $tools = [];
+        if ($toolSites && empty($overview['suspended'])) {
+            $key = 'clientarea_tools_' . $serviceId . '_' . $language . '_' . $gen . '_' . md5(implode(',', array_keys($toolSites)));
+            $tools = _enhance_cache_get($key, 300, function () use ($params, $toolSites) {
+                $api   = _enhance_api($params);
+                $orgId = (string) $api->getClientOrgId(_enhance_client_id($params));
+                $out = ['available' => true];
+                foreach ($toolSites as $id => $domain) {
+                    $out[$id] = _enhance_website_tools($api, $orgId, ['id' => $id, 'domain' => ['domain' => $domain]], $params);
+                }
+                return $out;
+            });
+        }
+        foreach ($items as &$w) {
+            $w['tools'] = $tools[$w['id']] ?? null;
+        }
+        unset($w);
+
+        $query = $search !== '' ? '&enhsearch=' . rawurlencode($search) : '';
+        $sites = [
+            'items'      => $items,
+            'total'      => count($all),
+            'page'       => $page,
+            'pages'      => $pages,
+            'links'      => _enhance_pager_links($page, $pages, fn($n) => $baseUrl . '&enhpage=' . $n . $query),
+            'search'     => $search,
+            'searchable' => count($all) > $perPage || $search !== '',
+        ];
     } catch (Throwable $e) {
         // The client area must always render; details are in the module log.
     }
@@ -715,8 +775,11 @@ function enhance_ClientArea(array $params): array
         'tabOverviewReplacementTemplate' => 'templates/clientarea.tpl',
         'templateVariables' => [
             'ssoUrl'         => $ssoUrl,
+            'pageUrl'        => $pageUrl,
+            'serviceId'      => $serviceId,
+            'sites'          => $sites,
             'allowRestore'   => _enhance_restore_allowed($params) && _enhance_client_may_use_tools($params, true),
-            'actionUrl'      => $systemUrl . '/clientarea.php?action=productdetails&id=' . (int) $params['serviceid'] . '&modop=custom&a=',
+            'actionUrl'      => $baseUrl . '&modop=custom&a=',
             'csrfToken'      => function_exists('generate_token') ? (string) generate_token('plain') : '',
             'domain'         => $params['domain'],
             'enhance'        => $overview,
@@ -728,11 +791,26 @@ function enhance_ClientArea(array $params): array
     ];
 }
 
+/**
+ * Page links: first, last, and two pages around the current one, with gaps
+ * (e.g. 1 ... 8 9 [10] 11 12 ... 200).
+ */
+function _enhance_pager_links(int $page, int $pages, callable $url): array
+{
+    $links = [];
+    $last = 0;
+    for ($n = 1; $n <= $pages; $n++) {
+        if ($n !== 1 && $n !== $pages && abs($n - $page) > 2) continue;
+        if ($last && $n - $last > 1) $links[] = ['gap' => true];
+        $links[] = ['label' => (string) $n, 'url' => $url($n), 'current' => $n === $page, 'gap' => false];
+        $last = $n;
+    }
+    return $links;
+}
+
 // =============================================================================
 // Client area tools: webmail, phpMyAdmin, WordPress, SSL and backups
 // =============================================================================
-
-if (!defined('ENHANCE_CLIENTAREA_TOOLS_WEBSITES')) define('ENHANCE_CLIENTAREA_TOOLS_WEBSITES', 5);
 
 /** Date of an Enhance ISO timestamp in the reader's format. */
 function _enhance_format_date(string $iso): string
@@ -749,9 +827,11 @@ function _enhance_website_tools(EnhanceApi $api, string $orgId, array $site, arr
 {
     $websiteId = (string) $site['id'];
     $primary   = strtolower((string) ($site['domain']['domain'] ?? ''));
-    $tools = ['ssl' => null, 'mailboxes' => [], 'databases' => [], 'wordpress' => [], 'backups' => []];
+    $tools = ['ssl' => null, 'ssl_known' => false, 'mailboxes' => [], 'databases' => [], 'wordpress' => [], 'backups' => []];
 
     $ssl = $api->getWebsiteSsl($orgId, $websiteId);
+    // "No certificate" is only stated when Enhance answered; an API error shows nothing.
+    $tools['ssl_known'] = !EnhanceApi::isError($ssl);
     foreach ((array) ($ssl['items'] ?? []) as $mapping) {
         if (empty($mapping['cert']['expires'])) continue;
         if ($tools['ssl'] !== null && strtolower((string) ($mapping['domain'] ?? '')) !== $primary) continue;
@@ -781,7 +861,7 @@ function _enhance_website_tools(EnhanceApi $api, string $orgId, array $site, arr
     $apps = $api->listWebsiteApps($orgId, $websiteId);
     foreach ((array) ($apps['items'] ?? []) as $app) {
         if (($app['app'] ?? '') === 'wordpress' && !empty($app['id'])) {
-            $tools['wordpress'][] = ['id' => (string) $app['id'], 'path' => '/' . ltrim((string) ($app['path'] ?? ''), '/')];
+            $tools['wordpress'][] = ['id' => (string) $app['id'], 'path' => _enhance_app_subfolder((string) ($app['path'] ?? ''))];
         }
     }
 
@@ -790,16 +870,35 @@ function _enhance_website_tools(EnhanceApi $api, string $orgId, array $site, arr
     usort($items, fn($a, $b) => strcmp((string) ($b['startedAt'] ?? ''), (string) ($a['startedAt'] ?? '')));
     foreach (array_slice($items, 0, 5) as $backup) {
         $ok = ($backup['homeDirStatus'] ?? '') === 'successful';
+        $size = isset($backup['size']) ? (int) $backup['size'] : 0;
+        // An incremental backup with nothing to copy (0 bytes) is not a failure for the client:
+        // only backups that wrote data and report a failed component are shown as failed.
+        $failed = $size > 0 && in_array('failed', [$backup['homeDirStatus'] ?? '', $backup['mysqlDbsStatus'] ?? '', $backup['emailsStatus'] ?? ''], true);
         $tools['backups'][] = [
             'id'      => (int) ($backup['id'] ?? 0),
             'date'    => _enhance_format_date((string) ($backup['finishedAt'] ?? $backup['startedAt'] ?? '')),
-            'size'    => isset($backup['size']) ? _enhance_format_bytes((int) $backup['size']) : '',
+            'size'    => $size > 0 ? _enhance_format_bytes($size) : '',
             'kind'    => EnhanceLang::t('ca.backup_kind_' . (in_array($backup['kind'] ?? '', ['manual', 'automatic', 'archive'], true) ? $backup['kind'] : 'automatic')),
             'ok'      => $ok,
+            'failed'  => $failed,
             'pending' => empty($backup['finishedAt']),
         ];
     }
     return $tools;
+}
+
+/**
+ * Subfolder of a website app for display: '' when installed in the website root.
+ * Enhance omits the path for root installs (API) but some panels return the
+ * document root itself ("public_html"), which is not a subfolder either.
+ */
+function _enhance_app_subfolder(string $path): string
+{
+    $path = trim($path, '/');
+    if ($path === 'public_html' || strpos($path, 'public_html/') === 0) {
+        $path = trim(substr($path, strlen('public_html')), '/');
+    }
+    return $path === '' ? '' : '/' . $path;
 }
 
 function _enhance_restore_allowed(array $params): bool

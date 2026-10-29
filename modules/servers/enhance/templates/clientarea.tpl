@@ -286,6 +286,46 @@
         margin: 0;
         font-size: 12px;
     }
+    .wd-enhance-sites-head {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin: 0 0 12px 0;
+    }
+    .wd-enhance-search {
+        display: flex;
+        gap: 6px;
+        margin: 0;
+    }
+    .wd-enhance-search input {
+        max-width: 240px;
+    }
+    .wd-enhance-tools h4 small {
+        font-weight: 400;
+        color: #6b778c;
+        margin-left: 6px;
+    }
+    .wd-enhance-tools h4 .wd-enhance-status {
+        float: right;
+    }
+    .wd-enhance-nowrap {
+        white-space: nowrap;
+    }
+    .wd-enhance-pager {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-items: center;
+        margin: 4px 0 18px 0;
+    }
+    .wd-enhance-gap,
+    .wd-enhance-page-info {
+        color: #6b778c;
+        font-size: 13px;
+        padding: 0 4px;
+    }
 </style>
 
 <div class="wd-enhance-client-card"{if $colorPrimary} data-color-fixed="1" style="--enhance-primary: {$colorPrimary};{if $colorSecondary} --enhance-secondary: {$colorSecondary};{/if}"{/if}>
@@ -336,100 +376,126 @@
                 </div>
             {/if}
 
-            {if $enhance.websites}
-                <ul class="wd-enhance-sites">
-                    {foreach $enhance.websites as $site}
-                        <li>
-                            <span><i class="fa fa-globe"></i> {$site.domain|escape}{if $site.php} <small>PHP {$site.php|escape}</small>{/if}</span>
+            {if $sites.total}
+                <div class="wd-enhance-sites-head">
+                    <strong>{$enhanceLang.websites_count|replace:':total':$sites.total|escape}</strong>
+                    {if $sites.searchable}
+                        <form method="get" action="{$pageUrl|escape}" class="wd-enhance-search">
+                            <input type="hidden" name="action" value="productdetails">
+                            <input type="hidden" name="id" value="{$serviceId|escape}">
+                            <input type="search" name="enhsearch" class="form-control input-sm" value="{$sites.search|escape}" placeholder="{$enhanceLang.search_domain|escape}">
+                            <button type="submit" class="btn btn-default btn-sm"><i class="fa fa-search"></i> {$enhanceLang.search|escape}</button>
+                        </form>
+                    {/if}
+                </div>
+
+                {if !$sites.items}
+                    <div class="alert alert-info">{$enhanceLang.search_none|replace:':term':$sites.search|escape}</div>
+                {/if}
+
+                {foreach $sites.items as $site}
+                    <div class="wd-enhance-tools">
+                        <h4>
+                            <i class="fa fa-globe"></i> {$site.domain|escape}
+                            {if $site.php}<small>PHP {$site.php|escape}</small>{/if}
                             {if $site.active}
                                 <span class="wd-enhance-status">{$enhanceLang.active|escape}</span>
                             {else}
                                 <span class="wd-enhance-status is-off">{$enhanceLang.inactive|escape}</span>
                             {/if}
-                        </li>
-                    {/foreach}
-                </ul>
-            {/if}
+                        </h4>
+                        {if $site.tools}
 
-            {foreach $enhance.websites as $site}
-                {if $site.tools}
-                    <div class="wd-enhance-tools">
-                        <h4><i class="fa fa-wrench"></i> {$site.domain|escape}</h4>
-
-                        {if $site.tools.ssl}
-                            <div class="wd-enhance-ssl{if $site.tools.ssl.expired} is-expired{elseif $site.tools.ssl.warn} is-warn{/if}">
-                                <i class="fa fa-lock"></i>
-                                {if $site.tools.ssl.expired}{$enhanceLang.ssl_expired|escape}{else}{$enhanceLang.ssl_valid|escape}{/if}
-                                {$site.tools.ssl.expires|escape}{if $site.tools.ssl.issuer} &middot; {$site.tools.ssl.issuer|escape}{/if}
-                                {if !$site.tools.ssl.expired && $site.tools.ssl.days !== null} ({$enhanceLang.ssl_days|replace:':days':$site.tools.ssl.days|escape}){/if}
-                            </div>
-                        {else}
-                            <div class="wd-enhance-ssl is-warn"><i class="fa fa-unlock"></i> {$enhanceLang.ssl_none|escape}</div>
-                        {/if}
-
-                        <div class="wd-enhance-tools-row">
-                            {if $site.tools.mailboxes}
-                                <div class="dropdown btn-group">
-                                    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fa fa-envelope"></i> {$enhanceLang.webmail|escape} <span class="caret"></span>
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        {foreach $site.tools.mailboxes as $mailbox}
-                                            <li><a class="dropdown-item" target="_blank" rel="noopener" href="{$actionUrl|escape}WebmailSso&amp;website={$site.id|escape:'url'}&amp;email={$mailbox|escape:'url'}">{$mailbox|escape}</a></li>
-                                        {/foreach}
-                                    </ul>
+                            {if $site.tools.ssl}
+                                <div class="wd-enhance-ssl{if $site.tools.ssl.expired} is-expired{elseif $site.tools.ssl.warn} is-warn{/if}">
+                                    <i class="fa fa-lock"></i>
+                                    {if $site.tools.ssl.expired}{$enhanceLang.ssl_expired|escape}{else}{$enhanceLang.ssl_valid|escape}{/if}
+                                    {$site.tools.ssl.expires|escape}{if $site.tools.ssl.issuer} &middot; {$site.tools.ssl.issuer|escape}{/if}
+                                    {if !$site.tools.ssl.expired && $site.tools.ssl.days !== null} ({$enhanceLang.ssl_days|replace:':days':$site.tools.ssl.days|escape}){/if}
                                 </div>
+                            {elseif $site.tools.ssl_known}
+                                <div class="wd-enhance-ssl is-warn"><i class="fa fa-unlock"></i> {$enhanceLang.ssl_none|escape}</div>
                             {/if}
-                            {if $site.tools.databases}
-                                <div class="dropdown btn-group">
-                                    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fa fa-database"></i> phpMyAdmin <span class="caret"></span>
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        {foreach $site.tools.databases as $db}
-                                            <li><a class="dropdown-item" target="_blank" rel="noopener" href="{$actionUrl|escape}PhpMyAdminSso&amp;website={$site.id|escape:'url'}&amp;db={$db|escape:'url'}">{$db|escape}</a></li>
-                                        {/foreach}
-                                    </ul>
-                                </div>
-                            {/if}
-                            {foreach $site.tools.wordpress as $wp}
-                                <a class="btn btn-default btn-sm" target="_blank" rel="noopener" href="{$actionUrl|escape}WordpressSso&amp;website={$site.id|escape:'url'}&amp;app={$wp.id|escape:'url'}">
-                                    <i class="fa fa-wordpress"></i> {$enhanceLang.wordpress|escape}{if $wp.path != '/'} ({$wp.path|escape}){/if}
-                                </a>
-                            {/foreach}
-                        </div>
 
-                        {if $site.tools.backups}
-                            <table class="wd-enhance-backups">
-                                <tr><th>{$enhanceLang.backups|escape}</th><th></th><th></th><th></th></tr>
-                                {foreach $site.tools.backups as $backup}
-                                    <tr>
-                                        <td>{$backup.date|escape}</td>
-                                        <td>{$backup.kind|escape}</td>
-                                        <td>{$backup.size|escape}</td>
-                                        <td>
-                                            {if $backup.pending}
-                                                <span class="wd-enhance-status is-off">{$enhanceLang.backup_running|escape}</span>
-                                            {elseif !$backup.ok}
-                                                <span class="wd-enhance-status is-off">{$enhanceLang.backup_failed|escape}</span>
-                                            {elseif $allowRestore}
-                                                <form method="post" class="wd-enhance-restore" action="{$actionUrl|escape}RestoreBackup">
-                                                    <input type="hidden" name="token" value="{$csrfToken|escape}">
-                                                    <input type="hidden" name="website" value="{$site.id|escape}">
-                                                    <input type="hidden" name="backup" value="{$backup.id|escape}">
-                                                    <label><input type="checkbox" name="include_emails" value="1"> {$enhanceLang.backup_include_emails|escape}</label>
-                                                    <label><input type="checkbox" name="confirm" value="1" required> {$enhanceLang.backup_confirm|escape}</label>
-                                                    <button type="submit" class="btn btn-warning btn-xs btn-sm">{$enhanceLang.backup_restore|escape}</button>
-                                                </form>
-                                            {/if}
-                                        </td>
-                                    </tr>
+                            <div class="wd-enhance-tools-row">
+                                {if $site.tools.mailboxes}
+                                    <div class="dropdown btn-group">
+                                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fa fa-envelope"></i> {$enhanceLang.webmail|escape} <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            {foreach $site.tools.mailboxes as $mailbox}
+                                                <li><a class="dropdown-item" target="_blank" rel="noopener" href="{$actionUrl|escape}WebmailSso&amp;website={$site.id|escape:'url'}&amp;email={$mailbox|escape:'url'}">{$mailbox|escape}</a></li>
+                                            {/foreach}
+                                        </ul>
+                                    </div>
+                                {/if}
+                                {if $site.tools.databases}
+                                    <div class="dropdown btn-group">
+                                        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fa fa-database"></i> phpMyAdmin <span class="caret"></span>
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            {foreach $site.tools.databases as $db}
+                                                <li><a class="dropdown-item" target="_blank" rel="noopener" href="{$actionUrl|escape}PhpMyAdminSso&amp;website={$site.id|escape:'url'}&amp;db={$db|escape:'url'}">{$db|escape}</a></li>
+                                            {/foreach}
+                                        </ul>
+                                    </div>
+                                {/if}
+                                {foreach $site.tools.wordpress as $wp}
+                                    <a class="btn btn-default btn-sm" target="_blank" rel="noopener" href="{$actionUrl|escape}WordpressSso&amp;website={$site.id|escape:'url'}&amp;app={$wp.id|escape:'url'}">
+                                        <i class="fab fa-wordpress"></i> {$enhanceLang.wordpress|escape}{if $wp.path} ({$wp.path|escape}){/if}
+                                    </a>
                                 {/foreach}
-                            </table>
+                            </div>
+
+                            {if $site.tools.backups}
+                                <table class="wd-enhance-backups">
+                                    <tr><th colspan="4">{$enhanceLang.backups|escape}</th></tr>
+                                    {foreach $site.tools.backups as $backup}
+                                        <tr>
+                                            <td class="wd-enhance-nowrap">{$backup.date|escape}</td>
+                                            <td>{$backup.kind|escape}</td>
+                                            <td class="wd-enhance-nowrap">{$backup.size|escape}</td>
+                                            <td>
+                                                {if $backup.pending}
+                                                    <span class="wd-enhance-status is-off">{$enhanceLang.backup_running|escape}</span>
+                                                {elseif $backup.failed}
+                                                    <span class="wd-enhance-status is-off">{$enhanceLang.backup_failed|escape}</span>
+                                                {elseif $allowRestore && $backup.ok}
+                                                    <form method="post" class="wd-enhance-restore" action="{$actionUrl|escape}RestoreBackup">
+                                                        <input type="hidden" name="token" value="{$csrfToken|escape}">
+                                                        <input type="hidden" name="website" value="{$site.id|escape}">
+                                                        <input type="hidden" name="backup" value="{$backup.id|escape}">
+                                                        <label><input type="checkbox" name="include_emails" value="1"> {$enhanceLang.backup_include_emails|escape}</label>
+                                                        <label><input type="checkbox" name="confirm" value="1" required> {$enhanceLang.backup_confirm|escape}</label>
+                                                        <button type="submit" class="btn btn-warning btn-xs btn-sm">{$enhanceLang.backup_restore|escape}</button>
+                                                    </form>
+                                                {/if}
+                                            </td>
+                                        </tr>
+                                    {/foreach}
+                                </table>
+                            {/if}
                         {/if}
                     </div>
+                {/foreach}
+
+                {if $sites.pages > 1}
+                    <nav class="wd-enhance-pager" aria-label="{$enhanceLang.pages|escape}">
+                        {foreach $sites.links as $link}
+                            {if $link.gap}
+                                <span class="wd-enhance-gap">&hellip;</span>
+                            {elseif $link.current}
+                                <span class="btn btn-primary btn-sm" aria-current="page">{$link.label|escape}</span>
+                            {else}
+                                <a class="btn btn-default btn-sm" href="{$link.url|escape}">{$link.label|escape}</a>
+                            {/if}
+                        {/foreach}
+                        <span class="wd-enhance-page-info">{$enhanceLang.page_info|replace:':pages':$sites.pages|replace:':page':$sites.page|escape}</span>
+                    </nav>
                 {/if}
-            {/foreach}
+            {/if}
         {/if}
 
         <div class="wd-enhance-feature-grid">
