@@ -1,0 +1,30 @@
+{
+    "schema": "1.0",
+    "type": "whmcs-addons",
+    "name": "enhance_importer",
+    "license": "proprietary",
+    "category": "utilities",
+    "description": {
+        "name": "Enhance Manager",
+        "tagline": "v1.4.0 · Settings, import and synchronisation for the Enhance module.",
+        "long": "Companion addon of the Enhance server module: client area settings (colours, language, visible sections, websites per page, cache, backup restore), import of Enhance plans as WHMCS products and of existing Enhance subscriptions as WHMCS services, and status synchronisation.",
+        "features": [
+            "Client area settings: colours with preview, language, visible sections, pagination, cache",
+            "Import Enhance plans as WHMCS products (hidden for review, no duplicates)",
+            "Import existing Enhance subscriptions as WHMCS services, page by page",
+            "Daily status synchronisation and connection test"
+        ]
+    },
+    "support": {
+        "homepage": "https://github.com/webdighost/enhance-whmcs",
+        "learn_more": "https://github.com/webdighost/enhance-whmcs#readme",
+        "support_url": "https://github.com/webdighost/enhance-whmcs/issues",
+        "docs_url": "https://github.com/webdighost/enhance-whmcs/blob/main/README.md"
+    },
+    "authors": [
+        {
+            "name": "WebDig Host",
+            "homepage": "https://github.com/webdighost"
+        }
+    ]
+}
