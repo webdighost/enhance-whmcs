@@ -1,6 +1,6 @@
 <?php
 /**
- * Enhance WHMCS Module - configuration overrides (v1.4.0)
+ * Enhance WHMCS Module - configuration overrides (v1.5.0)
  *
  * The client area and language settings are managed in
  *   Addons > Enhance Manager > Settings

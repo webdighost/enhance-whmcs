@@ -1,6 +1,6 @@
 <?php
 /**
- * Enhance WHMCS Hook - admin client profile widget (v1.4.0)
+ * Enhance WHMCS Hook - admin client profile widget (v1.5.0)
  *
  * Adds an Enhance panel to the admin client profile with the organisation
  * status, subscription/website/email counts and action buttons, and keeps the

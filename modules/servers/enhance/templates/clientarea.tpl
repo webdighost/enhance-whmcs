@@ -1,4 +1,4 @@
-{* Enhance WHMCS Module - Client Area (v1.4.0). Texts: lang/*.php, keys "ca.*" *}
+{* Enhance WHMCS Module - Client Area (v1.5.0). Texts: lang/*.php, keys "ca.*" *}
 
 <style>
     /*
@@ -326,27 +326,37 @@
         font-size: 13px;
         padding: 0 4px;
     }
-    /* WDH-CDN indicator, to the right of the tool buttons (own line on small screens) */
+    /* CDN usage strip, full width under the tool buttons */
     .wd-enhance-cdn {
-        margin-left: auto;
-        min-width: 240px;
-        max-width: 340px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px 18px;
+        margin: 10px 0 2px;
         border: 1px solid #e7ecf2;
         border-radius: 10px;
-        padding: 7px 12px;
-        font-size: 12px;
+        padding: 8px 14px;
+        font-size: 13px;
         color: #475569;
         background: #fafcff;
     }
     .wd-enhance-cdn-head {
         display: flex;
-        justify-content: space-between;
+        align-items: center;
         gap: 10px;
         color: #25364d;
-        margin-bottom: 2px;
+        flex: 0 0 auto;
+        min-width: 120px;
+    }
+    .wd-enhance-cdn-main {
+        flex: 1 1 260px;
+        min-width: 0;
+    }
+    .wd-enhance-cdn-year {
+        flex: 0 1 auto;
     }
     .wd-enhance-cdn-small {
-        font-size: 11px;
+        font-size: 12px;
         color: #6b778c;
     }
     .wd-enhance-cdn-bar {
@@ -369,10 +379,13 @@
         background: #c0392b;
     }
     @media (max-width: 767px) {
-        .wd-enhance-cdn {
-            margin-left: 0;
-            max-width: none;
+        .wd-enhance-cdn-head {
             width: 100%;
+            justify-content: space-between;
+        }
+        .wd-enhance-cdn-main,
+        .wd-enhance-cdn-year {
+            flex-basis: 100%;
         }
         .wd-enhance-backups,
         .wd-enhance-backups tbody {
@@ -475,7 +488,7 @@
                         {capture name=cdnbox}{if $site.cdn}
                             <div class="wd-enhance-cdn{if $site.cdn.active && $site.cdn.level} is-{$site.cdn.level}{/if}">
                                 <div class="wd-enhance-cdn-head">
-                                    <strong>WDH-CDN</strong>
+                                    <strong>{$site.cdn.name|escape}</strong>
                                     {if $site.cdn.active}
                                         <span class="wd-enhance-status">{$enhanceLang.cdn_active|escape}</span>
                                     {else}
@@ -484,18 +497,20 @@
                                 </div>
                                 {if $site.cdn.active}
                                     {if $site.cdn.has_data}
-                                        <div class="wd-enhance-cdn-line">{$enhanceLang.cdn_month|escape}: <strong>{$site.cdn.month_used|escape}</strong>{if $site.cdn.month_limit} / {$site.cdn.month_limit|escape}{/if}</div>
-                                        {if $site.cdn.percent !== null}
-                                            <div class="wd-enhance-cdn-bar"><span style="width: {$site.cdn.percent|intval}%;"></span></div>
-                                        {/if}
+                                        <div class="wd-enhance-cdn-main">
+                                            <div class="wd-enhance-cdn-line">{$enhanceLang.cdn_month|escape}: <strong>{$site.cdn.month_used|escape}</strong>{if $site.cdn.month_limit} / {$site.cdn.month_limit|escape}{/if}</div>
+                                            {if $site.cdn.percent !== null}
+                                                <div class="wd-enhance-cdn-bar"><span style="width: {$site.cdn.percent|escape}%;"></span></div>
+                                            {/if}
+                                        </div>
                                         {if $site.cdn.year_used}
-                                            <div class="wd-enhance-cdn-line wd-enhance-cdn-small">{$enhanceLang.cdn_year|replace:':from':$site.cdn.year_from|replace:':to':$site.cdn.year_to|escape}: {$site.cdn.year_used|escape} / {$site.cdn.year_limit|escape}</div>
+                                            <div class="wd-enhance-cdn-year wd-enhance-cdn-small">{$enhanceLang.cdn_year|replace:':from':$site.cdn.year_from|replace:':to':$site.cdn.year_to|escape}: <strong>{$site.cdn.year_used|escape}</strong> / {$site.cdn.year_limit|escape}</div>
                                         {/if}
                                         {if $site.cdn.stale}
-                                            <div class="wd-enhance-cdn-small">{$enhanceLang.cdn_last_known|replace:':date':$site.cdn.updated|escape}</div>
+                                            <div class="wd-enhance-cdn-small" style="flex-basis:100%;">{$enhanceLang.cdn_last_known|replace:':date':$site.cdn.updated|escape}</div>
                                         {/if}
                                     {else}
-                                        <div class="wd-enhance-cdn-small">{$enhanceLang.cdn_collecting|escape}</div>
+                                        <div class="wd-enhance-cdn-main wd-enhance-cdn-small">{$enhanceLang.cdn_collecting|escape}</div>
                                     {/if}
                                 {/if}
                             </div>
@@ -543,8 +558,8 @@
                                         <i class="fab fa-wordpress"></i> {$enhanceLang.wordpress|escape}{if $wp.path} ({$wp.path|escape}){/if}
                                     </a>
                                 {/foreach}
-                                {$smarty.capture.cdnbox}
                             </div>
+                            {$smarty.capture.cdnbox}
 
                             {if $site.tools.backups}
                                 <table class="wd-enhance-backups">
@@ -575,7 +590,7 @@
                                 </table>
                             {/if}
                         {elseif $site.cdn}
-                            <div class="wd-enhance-tools-row">{$smarty.capture.cdnbox}</div>
+                            {$smarty.capture.cdnbox}
                         {/if}
                     </div>
                 {/foreach}

@@ -1,4 +1,4 @@
-# Enhance para WHMCS - v1.4.0 (guia em português)
+# Enhance para WHMCS - v1.5.0 (guia em português)
 
 Módulo de servidor, addon de gestão (Enhance Manager) e hooks que ligam o WHMCS ao painel
 [Enhance](https://enhance.com) através da API REST. Interface em inglês com tradução completa em
@@ -23,7 +23,7 @@ separador do serviço (organização, subscrição, website, última ação do m
 associar/reparar a subscrição) e o addon **Enhance Manager**: definições da área de cliente, planos
 Enhance para produtos, subscrições existentes para serviços, sincronização.
 
-**WDH-CDN (opcional):** monitorização do tráfego CDN por website (bunny.net, só leitura), com o mês civil
+**CDN (opcional):** monitorização do tráfego CDN por website (bunny.net, só leitura), com o mês civil
 e a anuidade mostrados ao cliente com barra de progresso, alertas só para a administração e três planos.
 
 ## Instalação e atualização
@@ -113,25 +113,28 @@ mantêm-nas. Para forçar uma definição a partir dos ficheiros, retire o comen
   da área de cliente: o administrador entra como o cliente (titular da organização), e isso fica registado
   no registo de atividade.
 
-## WDH-CDN (monitorização do tráfego CDN)
+## CDN (monitorização do tráfego CDN)
 
 Opcional e desligado por omissão. O módulo **só lê** estatísticas do fornecedor de CDN (bunny.net): nunca
 cria, altera, suspende ou elimina Pull Zones. Cada website é associado manualmente pela administração.
-A área de cliente mostra apenas a marca **WDH-CDN**; o fornecedor nunca é indicado ao cliente.
+A área de cliente mostra apenas o nome definido em *Nome mostrado aos clientes* (**CDN** por omissão,
+por exemplo a sua marca); o fornecedor nunca é indicado ao cliente. Os nomes, tráfego e preços dos
+planos são editáveis.
 
 **Configuração**
-1. Addons > Enhance Manager > **WDH-CDN**: ative a integração, cole a chave de API da conta do fornecedor
+1. Addons > Enhance Manager > **CDN**: ative a integração, cole a chave de API da conta do fornecedor
    (bunny.net > Account > API key) e guarde. Use **Testar ligação**.
-2. Confirme os planos (tráfego mensal e preço anual, apenas informativo - não há faturação):
+2. Defina o nome mostrado aos clientes e os planos (nome, tráfego mensal e preço anual, apenas
+   informativo - não há faturação). Valores por omissão:
 
    | Plano | Tráfego mensal | Preço anual (sem IVA) |
    |---|---|---|
-   | WDH-CDN Business | 10 GB | gratuito |
-   | WDH-CDN Standard | 25 GB | 25,00 € |
-   | WDH-CDN Volume | 75 GB | 50,00 € |
+   | Business | 10 GB | gratuito |
+   | Standard | 25 GB | 25,00 € |
+   | Volume | 75 GB | 50,00 € |
 
-3. No separador do serviço (Clientes > serviço), bloco **WDH-CDN**, por website: marque *CDN ativo*,
-   endereço CDN (por exemplo `site.wdh-cdn.eu`), Pull Zone ID, plano, limite opcional (substitui o do
+3. No separador do serviço (Clientes > serviço), bloco **CDN** (ou o nome definido), por website: marque *CDN ativo*,
+   endereço CDN (por exemplo `cdn.example.com`), Pull Zone ID, plano, limite opcional (substitui o do
    plano) e data de ativação (início da anuidade). Guarde o serviço; marque *Atualizar estatísticas ao
    guardar* para obter logo os dados. A Pull Zone e o endereço são validados no fornecedor quando mudam.
    Uma Pull Zone já usada no website de outro cliente exige confirmação explícita.
@@ -149,7 +152,7 @@ A área de cliente mostra apenas a marca **WDH-CDN**; o fornecedor nunca é indi
   "último consumo conhecido" quando os dados têm mais do dobro do intervalo.
 
 **Alertas** (só administração): nas percentagens de aviso e crítico (80 % e 100 % por omissão), por mês e
-por anuidade, uma vez por nível e período, no registo de atividade e no separador WDH-CDN, onde podem ser
+por anuidade, uma vez por nível e período, no registo de atividade e no separador CDN, onde podem ser
 marcados como vistos. Os clientes nunca são notificados.
 
 **Segurança**

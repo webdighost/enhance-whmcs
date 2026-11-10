@@ -1,4 +1,4 @@
-# Enhance for WHMCS - v1.4.0
+# Enhance for WHMCS - v1.5.0
 
 WHMCS server module, management addon (Enhance Manager) and hooks that connect WHMCS to the
 [Enhance](https://enhance.com) control panel through its REST API.
@@ -27,7 +27,7 @@ subscription, website, last module action and last error, link/repair the subscr
 **Enhance Manager** addon: client area settings, Enhance plans to products, existing subscriptions to
 services, synchronisation.
 
-**WDH-CDN (optional):** per-website CDN traffic monitoring (bunny.net, read only) with the calendar
+**CDN (optional):** per-website CDN traffic monitoring (bunny.net, read only) with the calendar
 month and the annuity shown to the client with a progress bar, admin-only alerts and three plans.
 
 ## Contents
@@ -35,14 +35,14 @@ month and the annuity shown to the client with a progress bar, admin-only alerts
 ```
 includes/hooks/enhance.php                      Client profile panel; profile edits rename the organisation
 includes/hooks/enhance_importer_daily_sync.php  Daily status synchronisation (WHMCS cron)
-includes/hooks/enhance_cdn.php                  WDH-CDN statistics synchronisation (WHMCS cron)
+includes/hooks/enhance_cdn.php                  CDN statistics synchronisation (WHMCS cron)
 modules/addons/enhance_importer/                Importer addon
   enhance_importer.php   Addon entry points, tabs, shared helpers
   lib/packages.php       Enhance Plans tab
   lib/services.php       Existing Services tab
   lib/sync.php           Synchronisation tab
   lib/settings.php       Settings tab
-  lib/cdn.php            WDH-CDN tab
+  lib/cdn.php            CDN tab
 modules/servers/enhance/                        Server module
   enhance.php            Module functions (provisioning, SSO, client area and tools, admin tab)
   EnhanceApi.php         API client (authentication, transport, diagnostics, all API calls)
@@ -50,10 +50,10 @@ modules/servers/enhance/                        Server module
   EnhanceSync.php        Status and usage synchronisation
   EnhanceLang.php        Translation loader
   EnhanceSettings.php    Settings (mod_enhance_settings) and config.php overrides
-  EnhanceCdn.php         WDH-CDN provider client (read only)
-  EnhanceCdnStore.php    WDH-CDN associations, daily traffic, alerts
-  EnhanceCdnSync.php     WDH-CDN synchronisation and alerts
-  EnhanceCdnUi.php       WDH-CDN service tab block and client area data
+  EnhanceCdn.php         CDN provider client (read only)
+  EnhanceCdnStore.php    CDN associations, daily traffic, alerts
+  EnhanceCdnSync.php     CDN synchronisation and alerts
+  EnhanceCdnUi.php       CDN service tab block and client area data
   lang/english.php       English (source)
   lang/portuguese-pt.php European Portuguese
   templates/clientarea.tpl
@@ -146,25 +146,27 @@ it is then shown as locked in the Settings tab.
   the client area: the admin enters as the client (organisation owner), and this is written to the
   activity log.
 
-## WDH-CDN (CDN traffic monitoring)
+## CDN (traffic monitoring)
 
 Optional and off by default. The module **only reads** statistics from the CDN provider (bunny.net): it
 never creates, changes, suspends or deletes Pull Zones. Each website is associated manually by the admin.
-The client area shows the brand **WDH-CDN** only; the provider is never named to clients.
+The client area shows only the name set in *Name shown to clients* (default **CDN**, for example your
+own brand); the provider is never named to clients. Plan names, traffic and prices are editable.
 
 **Setup**
-1. Addons > Enhance Manager > **WDH-CDN**: enable the integration, paste the provider account API key
+1. Addons > Enhance Manager > **CDN**: enable the integration, paste the provider account API key
    (bunny.net > Account > API key) and save. Use **Test connection**.
-2. Check the plans (monthly traffic and annual price, informative only - there is no invoicing):
+2. Set the name shown to clients and the plans (name, monthly traffic and annual price, informative
+   only - there is no invoicing). Defaults:
 
    | Plan | Monthly traffic | Annual price (no VAT) |
    |---|---|---|
-   | WDH-CDN Business | 10 GB | free |
-   | WDH-CDN Standard | 25 GB | 25,00 € |
-   | WDH-CDN Volume | 75 GB | 50,00 € |
+   | Business | 10 GB | free |
+   | Standard | 25 GB | 25,00 € |
+   | Volume | 75 GB | 50,00 € |
 
-3. In the service tab (Clients > service), block **WDH-CDN**, per website: tick *CDN active*, CDN
-   address (for example `site.wdh-cdn.eu`), Pull Zone ID, plan, optional limit (overrides the plan) and
+3. In the service tab (Clients > service), block **CDN** (or the name set), per website: tick *CDN active*, CDN
+   address (for example `cdn.example.com`), Pull Zone ID, plan, optional limit (overrides the plan) and
    the activation date (start of the annuity). Save the service; tick *Update statistics on save* to fetch
    the data at once. The Pull Zone and the address are checked against the provider when they change.
    A Pull Zone already used by another client's website needs an explicit confirmation.
@@ -181,7 +183,7 @@ The client area shows the brand **WDH-CDN** only; the provider is never named to
   when the data is older than twice the interval.
 
 **Alerts** (admin only): at the warning and critical percentages (default 80 % and 100 %), per month and
-per annuity, once per level and period, in the activity log and in the WDH-CDN tab, where they can be
+per annuity, once per level and period, in the activity log and in the CDN tab, where they can be
 marked as seen. Clients are never notified.
 
 **Security**

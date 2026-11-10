@@ -1,9 +1,9 @@
 <?php
 /**
- * WDH-CDN - statistics synchronisation and admin alerts (v1.4.0)
+ * CDN - statistics synchronisation and admin alerts (v1.5.0)
  *
  * Run by the WHMCS cron (includes/hooks/enhance_cdn.php) at the interval set in
- * Addons > Enhance Manager > WDH-CDN, and on demand by the admin.
+ * Addons > Enhance Manager > CDN, and on demand by the admin.
  *
  * Per active website: check the pull zone (state, hostnames, type, month charges),
  * fetch the traffic per day and store it (re-syncing the last 3 days to pick up

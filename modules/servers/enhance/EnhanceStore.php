@@ -21,7 +21,7 @@ use WHMCS\Database\Capsule;
 
 class EnhanceStore
 {
-    const VERSION        = '1.4.0';
+    const VERSION        = '1.5.0';
     const SETTING        = 'EnhanceModuleStoreVersion';
     const T_CLIENTS      = 'mod_enhance_clients';
     const T_SERVICES     = 'mod_enhance_services';

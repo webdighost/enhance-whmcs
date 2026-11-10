@@ -1,6 +1,6 @@
 <?php
 /**
- * Enhance WHMCS Server Module v1.4.0
+ * Enhance WHMCS Server Module v1.5.0
  *
  * Supports: account creation, suspension, termination, plan change, SSO,
  * admin services tab, dynamic plan dropdown, connection test, usage update.
@@ -775,7 +775,7 @@ function enhance_ClientArea(array $params): array
                 return $out;
             });
         }
-        // WDH-CDN: local data only (synchronised by the cron), for these websites of this service.
+        // CDN: local data only (synchronised by the cron), for these websites of this service.
         $cdn = _enhance_cdn_client_data($serviceId, array_column($items, 'id'));
         foreach ($items as &$w) {
             $w['tools'] = $tools[$w['id']] ?? null;

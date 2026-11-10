@@ -1,6 +1,6 @@
 <?php
 /**
- * Enhance Manager for WHMCS (v1.4.0) - addon folder "enhance_importer"
+ * Enhance Manager for WHMCS (v1.5.0) - addon folder "enhance_importer"
  *
  * Imports Enhance plans as WHMCS products and existing Enhance subscriptions
  * as WHMCS services, runs the status synchronisation on demand and manages
@@ -133,7 +133,7 @@ function enhance_importer_output(array $vars): void
         echo enhance_importer_alert('danger', enhance_importer_t('imp.bad_token'));
     }
 
-    // Settings and WDH-CDN need no Enhance server or API call.
+    // Settings and CDN need no Enhance server or API call.
     if ($tab === 'settings' || $tab === 'cdn') {
         try {
             $tab === 'cdn' ? enhance_importer_cdn_page($moduleLink) : enhance_importer_settings_page($moduleLink);
@@ -177,7 +177,7 @@ function enhance_importer_tabs(string $moduleLink, string $active, int $serverId
         'services' => EnhanceLang::t('imp.tab_services'),
         'sync'     => EnhanceLang::t('imp.tab_sync'),
         'settings' => EnhanceLang::t('imp.tab_settings'),
-        'cdn'      => 'WDH-CDN',
+        'cdn'      => EnhanceLang::t('cdn.title'),
     ];
     $html = '<ul class="nav nav-tabs" style="margin:15px 0;">';
     foreach ($tabs as $key => $label) {

@@ -1,9 +1,9 @@
 <?php
 /**
- * WDH-CDN statistics synchronisation hook (v1.4.0)
+ * CDN statistics synchronisation hook (v1.5.0)
  *
  * Runs after every WHMCS cron execution and synchronises the CDN statistics when
- * the interval set in Addons > Enhance Manager > WDH-CDN has passed (default 24 h).
+ * the interval set in Addons > Enhance Manager > CDN has passed (default 24 h).
  * Does nothing while the integration is disabled or has no API key.
  */
 

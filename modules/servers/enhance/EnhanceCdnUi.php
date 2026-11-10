@@ -1,6 +1,6 @@
 <?php
 /**
- * WDH-CDN - admin service tab block, its save handler and client area data (v1.4.0)
+ * CDN - admin service tab block, its save handler and client area data (v1.5.0)
  *
  * The CDN is configured per Enhance website by the admin, in the service tab:
  * the fields are part of the WHMCS service form (CSRF and permissions by WHMCS)
@@ -41,11 +41,11 @@ function _enhance_cdn_plans(): array
     foreach (EnhanceSettings::CDN_PLANS as $plan) {
         $price = (float) EnhanceSettings::get('cdn_plan_' . $plan . '_price');
         $plans[$plan] = [
-            'name'  => EnhanceLang::t('cdn.plan_' . $plan),
+            'name'  => (string) EnhanceSettings::get('cdn_plan_' . $plan . '_name'),
             'gb'    => (int) EnhanceSettings::get('cdn_plan_' . $plan . '_gb'),
             'price' => $price,
             'label' => EnhanceLang::t('cdn.plan_label', [
-                'name'  => EnhanceLang::t('cdn.plan_' . $plan),
+                'name'  => (string) EnhanceSettings::get('cdn_plan_' . $plan . '_name'),
                 'gb'    => (int) EnhanceSettings::get('cdn_plan_' . $plan . '_gb'),
                 'price' => $price > 0 ? number_format($price, 2, EnhanceLang::t('fmt.decimal'), EnhanceLang::t('fmt.thousands')) . ' €' : EnhanceLang::t('cdn.free'),
             ]),
@@ -156,7 +156,7 @@ function _enhance_cdn_admin_fields(array $params): array
         $html .= '</div>';
     }
     $html .= '<div class="help-block" style="margin:0;">' . $h(EnhanceLang::t('cdn.admin_help')) . '</div></div>';
-    return [EnhanceLang::t('cdn.title') => $html];
+    return [(string) EnhanceSettings::get('cdn_name') => $html];
 }
 
 /**
@@ -284,17 +284,19 @@ function _enhance_cdn_client_data(int $serviceId, array $websiteIds): array
     if (!EnhanceSettings::get('cdn_enabled') || !$websiteIds) return [];
     $stored = EnhanceCdnStore::sitesForService($serviceId);
     $showInactive = (bool) EnhanceSettings::get('cdn_show_inactive');
+    $name = (string) EnhanceSettings::get('cdn_name');
     $fmtDate = fn($d) => $d ? date(EnhanceLang::t('fmt.date'), strtotime((string) $d)) : '';
     $out = [];
     foreach ($websiteIds as $id) {
         $site = $stored[strtolower($id)] ?? null;
         if (!$site || !$site->active) {
-            if ($showInactive) $out[$id] = ['active' => false];
+            if ($showInactive) $out[$id] = ['name' => $name, 'active' => false];
             continue;
         }
         $usage = EnhanceCdnStore::usage($site, gmdate('Y-m-d'));
         $pct = $usage['month_percent'];
         $out[$id] = [
+            'name'        => $name,
             'active'      => true,
             'has_data'    => $usage['has_data'],
             'month_used'  => _enhance_cdn_gb($usage['month_bytes']),

@@ -116,7 +116,7 @@ class H(BaseHTTPRequestHandler):
             BUNNY['ratelimit']-=1
             self.send_response(429); self.send_header('Retry-After','1'); self.send_header('Content-Length','0'); self.end_headers(); return
         if BUNNY.get('fail'): return self.send(500, {'Message':'Internal error'})
-        zones={1001:{'host':'antifraude.wdh-cdn.eu','type':0,'gb':0.5},1002:{'host':'other.wdh-cdn.eu','type':1,'gb':2.0}}
+        zones={1001:{'host':'antifraude.cdn.example.com','type':0,'gb':0.5},1002:{'host':'other.cdn.example.com','type':1,'gb':2.0}}
         if p=='/pullzone': return self.send(200, [])
         if p.startswith('/pullzone/'):
             zid=int(p.split('/')[2]); z=zones.get(zid)

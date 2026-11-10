@@ -6,7 +6,7 @@
     "category": "provisioning",
     "description": {
         "name": "Enhance",
-        "tagline": "v1.4.0 · Provisioning, single sign-on and client tools for the Enhance control panel.",
+        "tagline": "v1.5.0 · Provisioning, single sign-on and client tools for the Enhance control panel.",
         "long": "Connects WHMCS to the Enhance control panel through its REST API: creates organisations, owner logins, subscriptions and websites, suspends, terminates and changes plans, and gives clients one-click access to the panel, webmail, phpMyAdmin and WordPress. English and European Portuguese.",
         "features": [
             "Create, suspend, unsuspend, terminate (soft or hard) and change plan",

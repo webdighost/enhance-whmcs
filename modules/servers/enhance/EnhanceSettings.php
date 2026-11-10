@@ -1,6 +1,6 @@
 <?php
 /**
- * Enhance WHMCS Module - settings (v1.4.0)
+ * Enhance WHMCS Module - settings (v1.5.0)
  *
  * Settings are edited in Addons > Enhance Manager > Settings and stored in the
  * table mod_enhance_settings. A constant defined in config.php (see the list in
@@ -43,8 +43,9 @@ class EnhanceSettings
         'cache_ttl'          => ['type' => 'int',   'default' => 300,     'constant' => 'ENHANCE_CLIENTAREA_CACHE_TTL', 'min' => 0, 'max' => 3600],
         // Backup restore (per product option + global switch)
         'restore_enabled'    => ['type' => 'bool',  'default' => true,    'constant' => 'ENHANCE_CLIENTAREA_RESTORE'],
-        // WDH-CDN (monitoring of CDN pull zones, see EnhanceCdn.php)
+        // CDN (monitoring of CDN pull zones, see EnhanceCdn.php)
         'cdn_enabled'        => ['type' => 'bool',    'default' => false, 'constant' => 'ENHANCE_CDN_ENABLED'],
+        'cdn_name'           => ['type' => 'text',    'default' => 'CDN', 'constant' => 'ENHANCE_CDN_NAME', 'max' => 40],
         'cdn_api_key'        => ['type' => 'secret',  'default' => '',    'constant' => 'ENHANCE_CDN_API_KEY'],
         'cdn_sync_hours'     => ['type' => 'int',     'default' => 24,    'constant' => 'ENHANCE_CDN_SYNC_HOURS', 'min' => 1, 'max' => 168],
         'cdn_show_inactive'  => ['type' => 'bool',    'default' => true,  'constant' => 'ENHANCE_CDN_SHOW_INACTIVE'],
@@ -53,7 +54,10 @@ class EnhanceSettings
         'cdn_crit_pct'       => ['type' => 'int',     'default' => 100,   'constant' => 'ENHANCE_CDN_CRIT_PCT', 'min' => 1, 'max' => 1000],
         'cdn_retention_months' => ['type' => 'int',   'default' => 24,    'constant' => 'ENHANCE_CDN_RETENTION_MONTHS', 'min' => 3, 'max' => 120],
         'cdn_debug'          => ['type' => 'bool',    'default' => false, 'constant' => 'ENHANCE_CDN_DEBUG'],
-        // WDH-CDN plans: monthly traffic (GB) and annual price (EUR, without VAT)
+        // CDN plans: name, monthly traffic (GB) and annual price (EUR, without VAT)
+        'cdn_plan_business_name'  => ['type' => 'text',    'default' => 'Business', 'constant' => 'ENHANCE_CDN_PLAN_BUSINESS_NAME', 'max' => 40],
+        'cdn_plan_standard_name'  => ['type' => 'text',    'default' => 'Standard', 'constant' => 'ENHANCE_CDN_PLAN_STANDARD_NAME', 'max' => 40],
+        'cdn_plan_volume_name'    => ['type' => 'text',    'default' => 'Volume',   'constant' => 'ENHANCE_CDN_PLAN_VOLUME_NAME', 'max' => 40],
         'cdn_plan_business_gb'    => ['type' => 'int',     'default' => 10,  'constant' => 'ENHANCE_CDN_PLAN_BUSINESS_GB', 'min' => 1, 'max' => 1000000],
         'cdn_plan_standard_gb'    => ['type' => 'int',     'default' => 25,  'constant' => 'ENHANCE_CDN_PLAN_STANDARD_GB', 'min' => 1, 'max' => 1000000],
         'cdn_plan_volume_gb'      => ['type' => 'int',     'default' => 75,  'constant' => 'ENHANCE_CDN_PLAN_VOLUME_GB', 'min' => 1, 'max' => 1000000],
@@ -62,7 +66,7 @@ class EnhanceSettings
         'cdn_plan_volume_price'   => ['type' => 'decimal', 'default' => 50.0, 'constant' => 'ENHANCE_CDN_PLAN_VOLUME_PRICE', 'min' => 0, 'max' => 100000],
     ];
 
-    /** WDH-CDN plans, in display order. */
+    /** CDN plans (internal keys), in display order. */
     const CDN_PLANS = ['business', 'standard', 'volume'];
 
     /** @var array<string, string>|null */
@@ -220,6 +224,10 @@ class EnhanceSettings
                 $raw = str_replace(',', '.', trim((string) $raw));
                 if (!preg_match('/^\d+(\.\d{1,2})?$/', $raw)) return null;
                 return max((float) $def['min'], min((float) $def['max'], round((float) $raw, 2)));
+            case 'text':
+                // Short labels: no control characters or markup; empty is invalid (the default applies).
+                $raw = trim((string) preg_replace('/[\x00-\x1f\x7f<>]/u', '', (string) $raw));
+                return ($raw !== '' && mb_strlen($raw) <= ($def['max'] ?? 100)) ? $raw : null;
             case 'secret':
                 // API keys: printable, no spaces (spaces and line breaks from copy & paste are removed).
                 $raw = (string) preg_replace('/\s+/', '', (string) $raw);

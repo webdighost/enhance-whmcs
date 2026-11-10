@@ -1,6 +1,6 @@
 <?php
 /**
- * Enhance Manager - WDH-CDN tab: integration settings (encrypted API key), plans,
+ * Enhance Manager - CDN tab: integration settings (encrypted API key), plans,
  * connection test, synchronisation on demand, overview of every website with CDN
  * and the admin alerts. Needs no Enhance server.
  */
@@ -66,7 +66,11 @@ function enhance_importer_cdn_form(array $s, string $action): string
         . '<input type="password" class="form-control" style="max-width:420px;" id="enh-cdn-key" name="cdn_api_key" value="" autocomplete="new-password" placeholder="' . $t($key['configured'] ? 'cdnset.key_keep' : 'cdnset.key_paste') . '"' . $dis('cdn_api_key') . '>'
         . '<p class="help-block">' . $t('cdnset.cdn_api_key_help', ['provider' => EnhanceCdn::PROVIDER]) . '</p>'
         . ($key['configured'] && !$key['locked'] ? '<label style="font-weight:normal;"><input type="checkbox" name="cdn_api_key_remove" value="1"> ' . $t('cdnset.key_remove') . '</label>' : '')
-        . '</div>' . $check('cdn_show_inactive');
+        . '</div>'
+        . '<div class="form-group"><label for="enh-cdn-name">' . $t('cdnset.cdn_name') . '</label>' . $lock('cdn_name')
+        . '<input type="text" class="form-control" style="max-width:260px;" id="enh-cdn-name" name="cdn_name" maxlength="40" value="' . $h($s['cdn_name']['value']) . '"' . $dis('cdn_name') . '>'
+        . '<p class="help-block">' . $t('cdnset.cdn_name_help') . '</p></div>'
+        . $check('cdn_show_inactive');
     $sync = '<div style="display:flex;flex-wrap:wrap;">' . $num('cdn_sync_hours', $t('cdnset.hours')) . $num('cdn_retention_months', $t('cdnset.months')) . '</div>' . $check('cdn_debug');
     $last = EnhanceCdnSync::lastRun();
     $sync .= '<p class="text-muted">' . $t('cdnset.last_run', ['date' => $last ? date(EnhanceLang::t('fmt.date') . ' H:i', $last) : '-']) . '</p>';
@@ -76,7 +80,8 @@ function enhance_importer_cdn_form(array $s, string $action): string
     foreach (EnhanceSettings::CDN_PLANS as $plan) {
         $gb = 'cdn_plan_' . $plan . '_gb';
         $price = 'cdn_plan_' . $plan . '_price';
-        $plans .= '<tr><td><strong>' . $h(EnhanceLang::t('cdn.plan_' . $plan)) . '</strong></td>'
+        $name = 'cdn_plan_' . $plan . '_name';
+        $plans .= '<tr><td><input type="text" class="form-control input-sm" style="width:180px;" maxlength="40" name="' . $name . '" value="' . $h($s[$name]['value']) . '"' . $dis($name) . '></td>'
             . '<td><input type="number" class="form-control input-sm" style="width:110px;" min="1" name="' . $gb . '" value="' . $h($s[$gb]['value']) . '"' . $dis($gb) . '></td>'
             . '<td><div style="display:flex;align-items:center;gap:6px;"><input type="text" class="form-control input-sm" style="width:110px;" name="' . $price . '" value="' . $h(number_format((float) $s[$price]['value'], 2, '.', '')) . '"' . $dis($price) . '> €</div></td></tr>';
     }
@@ -110,7 +115,7 @@ function enhance_importer_cdn_overview(string $action): string
             . ($site->last_error ? '<br><small class="text-danger">' . $h(mb_substr((string) $site->last_error, 0, 160)) . '</small>' : '');
         $rows .= '<tr><td><strong>' . $h($site->domain) . '</strong><br><small>' . $h($site->cdn_host) . '</small></td>'
             . '<td><a href="clientsservices.php?userid=' . (int) $site->client_id . '&id=' . (int) $site->service_id . '">#' . (int) $site->service_id . '</a></td>'
-            . '<td>' . $h(EnhanceLang::t('cdn.plan_' . $site->plan)) . '<br><small>' . $t('cdn.zone_short', ['zone' => (int) $site->zone_id]) . '</small></td>'
+            . '<td>' . $h(_enhance_cdn_plans()[$site->plan]['name'] ?? $site->plan) . '<br><small>' . $t('cdn.zone_short', ['zone' => (int) $site->zone_id]) . '</small></td>'
             . '<td>' . $status . '</td>'
             . '<td>' . ($u['has_data'] ? $h(_enhance_cdn_gb($u['month_bytes']) . ' / ' . _enhance_cdn_gb($u['limit_bytes'])) . ' (' . (int) $u['month_percent'] . '%)' : '-') . '</td>'
             . '<td>' . ($u['annuity'] && $u['has_data'] ? $h(_enhance_cdn_gb((int) $u['year_bytes']) . ' / ' . _enhance_cdn_gb($u['year_limit'])) : '-') . '</td>'
