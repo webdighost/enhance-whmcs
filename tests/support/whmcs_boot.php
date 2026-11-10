@@ -10,7 +10,10 @@ class_alias(Manager::class, 'WHMCS\Database\Capsule');
 if (!defined('WHMCS')) define('WHMCS', true);
 $GLOBALS['activity'] = [];
 function logActivity($m, $c = 0) { $GLOBALS['activity'][] = $m; file_put_contents(dirname(__DIR__) . '/.tmp/activity.log', $m . "\n", FILE_APPEND); }
-function logModuleCall(...$a) {}
+$GLOBALS['modlog'] = [];
+function logModuleCall(...$a) { $GLOBALS['modlog'][] = $a; }
+function encrypt($v) { return 'X' . base64_encode(strrev((string) $v)); }
+function decrypt($v) { return strrev((string) base64_decode(substr((string) $v, 1))); }
 function localAPI($cmd, $args) { return ['result' => 'success']; }
 function generate_token($t) { return 'CSRF1'; }
 function check_token($ns, $t) { return $t === 'CSRF1'; }

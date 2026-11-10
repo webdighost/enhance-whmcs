@@ -20,6 +20,7 @@ if (!defined('WHMCS')) {
 }
 
 require_once __DIR__ . '/EnhanceSync.php';
+require_once __DIR__ . '/EnhanceCdnUi.php';
 
 use WHMCS\Config\Setting;
 use WHMCS\Database\Capsule;
@@ -774,8 +775,11 @@ function enhance_ClientArea(array $params): array
                 return $out;
             });
         }
+        // WDH-CDN: local data only (synchronised by the cron), for these websites of this service.
+        $cdn = _enhance_cdn_client_data($serviceId, array_column($items, 'id'));
         foreach ($items as &$w) {
             $w['tools'] = $tools[$w['id']] ?? null;
+            $w['cdn'] = $cdn[$w['id']] ?? null;
         }
         unset($w);
 
@@ -1242,6 +1246,11 @@ function enhance_AdminServicesTabFields(array $params): array
     } catch (Throwable $e) {
         $fields[EnhanceLang::t('tab.link')] = htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8');
     }
+    try {
+        $fields += _enhance_cdn_admin_fields($params);
+    } catch (Throwable $e) {
+        $fields[EnhanceLang::t('cdn.title')] = htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8');
+    }
     return $fields;
 }
 
@@ -1305,6 +1314,7 @@ function _enhance_admin_tab_maintenance(array $params): array
 /** Applies the subscription chosen in the service tab when the service is saved. */
 function enhance_AdminServicesTabFieldsSave(array $params): void
 {
+    _enhance_cdn_admin_save($params);
     $choice = trim((string) ($_POST['enhance_link_subscription'] ?? ''));
     if ($choice === '') return;
     $serviceId = (int) $params['serviceid'];

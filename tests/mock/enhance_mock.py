@@ -6,6 +6,7 @@ CUST='aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee'
 MEMBER='99999999-8888-4777-8666-555555555555'
 GOOD='tok_GOOD&abc'   # contains & to test WHMCS HTML-encoding
 LOG=[]
+BUNNY={'fail':0,'ratelimit':0,'bump':1.0}
 CUST2='cccccccc-bbbb-4ccc-8ddd-eeeeeeeeeeee'
 STATE={'members':{'dddddddd-0000-4000-8000-000000000099':{'id':'dddddddd-0000-4000-8000-000000000099','loginId':'eeeeeeee-1111-4222-8333-444444444444','roles':['SuperAdmin']}}, 'owner':None, 'n':0}
 class H(BaseHTTPRequestHandler):
@@ -24,6 +25,8 @@ class H(BaseHTTPRequestHandler):
             return self.send(200, '12.26.3') if self.headers.get('Authorization') is None else self.send(400, {'code':'unexpected_auth'})
         if self.path.startswith('/api/login/password-recovery'):
             return self.send(200 if self.command=='PUT' else 400, b'', 'text/plain')
+        if self.path.startswith('/bunny/'):
+            return self.bunny()
         if self.headers.get('Authorization') != 'Bearer '+GOOD:
             return self.send(401, {'code':'unauthorized','detail':'Invalid token'})
         u=urlparse(self.path); p=u.path; q=parse_qs(u.query)
@@ -60,7 +63,7 @@ class H(BaseHTTPRequestHandler):
             extra=[{'id':'abababab-0000-4000-8000-%012d'%(100+i),'domain':{'domain':'site%02d.pt'%i},'subscriptionId':5,'status':'active','kind':'normal','phpVersion':'php82'} for i in range(1,12)]
             return self.send(200, {'items':[site]+extra,'total':12})
         if p==W: return self.send(200, site)
-        if p==W+'/domains': return self.send(200, {'items':[{'domain':'acme.pt','mappingKind':'primary','cert':{'cn':'acme.pt','issuer':"Let's Encrypt",'issued':'2026-10-01T00:00:00Z','expires':'2026-11-08T00:00:00Z','sans':[],'forceHttps':True}}]})
+        if p==W+'/domains': return self.send(200, {'items':[{'domain':'acme.pt','mappingKind':'primary','cert':{'cn':'acme.pt','issuer':"Let's Encrypt",'issued':'2026-10-01T00:00:00Z','expires':(__import__('datetime').datetime.now(__import__('datetime').timezone.utc)+__import__('datetime').timedelta(days=9)).strftime('%Y-%m-%dT00:00:00Z'),'sans':[],'forceHttps':True}}]})
         if p==W+'/emails': return self.send(200, {'items':[{'address':'info@acme.pt','hasMailbox':True,'ssoAvailable':True,'status':'active','aliases':[]},{'address':'fwd@acme.pt','hasMailbox':False,'status':'active','aliases':[]}],'total':2})
         if p==W+'/emails/info%40acme.pt/sso' or p==W+'/emails/info@acme.pt/sso':
             self.send_response(302); self.send_header('Location','https://cp.test/roundcube/?_sso=abc'); self.send_header('Content-Length','0'); self.end_headers(); return
@@ -99,6 +102,42 @@ class H(BaseHTTPRequestHandler):
         if p.endswith('/calculate-resource-usage'): return self.send(204, b'', 'text/plain')
         if p.endswith('/bandwidth'): return self.send(200, 123456)
         return self.send(404, {'code':'not_found','detail':'Not found'})
+    def bunny(self):
+        # Mock of the bunny.net core API (checked against its OpenAPI spec): read-only endpoints.
+        import datetime
+        u=urlparse(self.path); p=u.path[len('/bunny'):]; q=parse_qs(u.query)
+        if p=='/__control':  # test control: fail, rate-limit once, traffic multiplier
+            for k in ('fail','ratelimit','bump'):
+                if k in q: BUNNY[k]=float(q[k][0])
+            return self.send(200, BUNNY)
+        if self.headers.get('AccessKey')!='bunny_GOOD_key':
+            return self.send(401, {'Message':'Unauthorized'})
+        if BUNNY.get('ratelimit',0)>=1:
+            BUNNY['ratelimit']-=1
+            self.send_response(429); self.send_header('Retry-After','1'); self.send_header('Content-Length','0'); self.end_headers(); return
+        if BUNNY.get('fail'): return self.send(500, {'Message':'Internal error'})
+        zones={1001:{'host':'antifraude.wdh-cdn.eu','type':0,'gb':0.5},1002:{'host':'other.wdh-cdn.eu','type':1,'gb':2.0}}
+        if p=='/pullzone': return self.send(200, [])
+        if p.startswith('/pullzone/'):
+            zid=int(p.split('/')[2]); z=zones.get(zid)
+            if not z: return self.send(404, {'Message':'The requested Pull Zone was not found'})
+            certs=q.get('includeCertificate',['false'])[0].lower()!='false'
+            host={'Value':z['host'],'IsSystemHostname':False,'HasCertificate':True}
+            if certs: host.update({'Certificate':'-----BEGIN CERTIFICATE-----','CertificateKey':'-----BEGIN PRIVATE KEY----- SECRET'})
+            return self.send(200, {'Id':zid,'Name':'zone%d'%zid,'Enabled':True,'Suspended':False,'Type':z['type'],
+                'Hostnames':[{'Value':'zone%d.b-cdn.net'%zid,'IsSystemHostname':True},host],'MonthlyBandwidthUsed':123,'MonthlyCharges':1.2345})
+        if p=='/statistics':
+            zid=int(q.get('pullZone',['-1'])[0]); z=zones.get(zid)
+            out={'TotalBandwidthUsed':0,'TotalRequestsServed':0,'CacheHitRate':0,'BandwidthUsedChart':{},'RequestsServedChart':{}}
+            if not z or q.get('loadBandwidthUsed',['false'])[0]!='true': return self.send(200, out)
+            d0=datetime.date.fromisoformat(q['dateFrom'][0][:10]); d1=datetime.date.fromisoformat(q['dateTo'][0][:10])
+            d=d0
+            while d<=d1:
+                b=z['gb']*1073741824*BUNNY.get('bump',1.0)
+                out['BandwidthUsedChart'][d.isoformat()+'T00:00:00Z']=b; out['RequestsServedChart'][d.isoformat()+'T00:00:00Z']=1000
+                out['TotalBandwidthUsed']+=int(b); d+=datetime.timedelta(days=1)
+            return self.send(200, out)
+        return self.send(404, {'Message':'not found'})
     do_GET=do_POST=do_PUT=do_PATCH=do_DELETE=handle_any
 def serve(port, mode):
     cls=type('H'+mode,(H,),{'mode':mode})

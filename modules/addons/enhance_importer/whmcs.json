@@ -12,7 +12,8 @@
             "Client area settings: colours with preview, language, visible sections, pagination, cache",
             "Import Enhance plans as WHMCS products (hidden for review, no duplicates)",
             "Import existing Enhance subscriptions as WHMCS services, page by page",
-            "Daily status synchronisation and connection test"
+            "Daily status synchronisation and connection test",
+            "WDH-CDN: read-only CDN traffic monitoring per website, with admin alerts"
         ]
     },
     "support": {

@@ -43,6 +43,19 @@
 - Settings are stored in `mod_enhance_settings`, so updates keep them; `config.php` no longer sets
   defaults and only holds optional overrides, shown as locked in the Settings tab.
 
+### WDH-CDN
+- Optional per-website CDN traffic monitoring (bunny.net), **read only**: no Pull Zone is ever created,
+  changed or deleted. New **WDH-CDN** tab in Enhance Manager (encrypted API key, test connection,
+  synchronisation, alerts, plans, sites overview) and a WDH-CDN block per website in the service tab.
+- Client area: "WDH-CDN" box per website with the calendar month usage, a progress bar and the annuity
+  total, from local data only; the provider is never named to clients.
+- Daily rows (`mod_enhance_cdn_daily`), idempotent synchronisation through the WHMCS cron (last 3 days
+  again, back-fill from the annuity start), retention setting, admin-only alerts at 80 % / 100 %.
+- Plans Business (10 GB, free), Standard (25 GB, 25 €/year) and Volume (75 GB, 50 €/year), editable.
+- Security: `includeCertificate=false`, HTTPS-only fixed host, no redirects, masked key, no response
+  bodies in the Module Log, hostname validation against the Pull Zone, no SSRF.
+- Settings forms save only their own fields, so the Settings tab no longer touches CDN settings.
+
 ### WHMCS integration
 - `whmcs.json` for the server module and the importer addon: name, description, features, authors and
   support links in WHMCS > Apps & Integrations, with the module version in the description.

@@ -14,13 +14,13 @@ function enhance_importer_settings_page(string $moduleLink): void
     $action = $moduleLink . '&tab=settings';
     $feedback = '';
     if (enhance_importer_valid_post('save_settings')) {
-        $invalid = EnhanceSettings::save($_POST);
+        $invalid = EnhanceSettings::save($_POST, EnhanceSettings::keys('cdn_', true));
         $feedback = $invalid
             ? enhance_importer_alert('warning', enhance_importer_t('set.saved_invalid', ['fields' => implode(', ', array_map(fn($k) => EnhanceLang::t('set.' . $k), $invalid))]))
             : enhance_importer_alert('success', enhance_importer_t('set.saved'));
         EnhanceLang::reset(); // the interface language may have changed
     } elseif (enhance_importer_valid_post('reset_settings')) {
-        EnhanceSettings::reset();
+        EnhanceSettings::reset(EnhanceSettings::keys('cdn_', true));
         EnhanceLang::reset();
         $feedback = enhance_importer_alert('success', enhance_importer_t('set.reset_done'));
     }

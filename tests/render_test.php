@@ -17,8 +17,8 @@ $render = function (string $language) use ($argv) {
 $pt = $render('portuguese-pt');
 $en = $render('english');
 $text = fn($html) => preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
-$check('PT: title, SSL date in d/m/Y, days left', strpos($text($pt), 'Painel de Alojamento') !== false && strpos($text($pt), 'Certificado SSL válido até 08/11/2026') !== false && strpos($text($pt), 'faltam') !== false, $text($pt));
-$check('EN: SSL date in Y-m-d', strpos($text($en), 'SSL certificate valid until 2026-11-08') !== false);
+$check('PT: title, SSL date in d/m/Y, days left', strpos($text($pt), 'Painel de Alojamento') !== false && strpos($text($pt), 'Certificado SSL válido até ' . gmdate('d/m/Y', strtotime('+9 days'))) !== false && strpos($text($pt), 'faltam') !== false, $text($pt));
+$check('EN: SSL date in Y-m-d', strpos($text($en), 'SSL certificate valid until ' . gmdate('Y-m-d', strtotime('+9 days'))) !== false);
 $check('tool links (webmail, phpMyAdmin, WordPress) with encoded parameters', strpos($pt, 'a=WebmailSso&amp;website=abababab-0000-4000-8000-000000000001&amp;email=info%40acme.pt') !== false && strpos($pt, 'a=PhpMyAdminSso') !== false && strpos($pt, 'a=WordpressSso') !== false);
 $check('mailbox without mailbox (forwarder only) not listed', strpos($pt, 'fwd%40acme.pt') === false);
 $check('restore form only for the successful backups, with CSRF token', substr_count($pt, 'name="backup"') === 2 && strpos($pt, 'name="backup" value="7"') !== false && strpos($pt, 'name="token" value="CSRF1"') !== false);

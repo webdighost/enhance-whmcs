@@ -20,6 +20,7 @@ require_once __DIR__ . '/lib/packages.php';
 require_once __DIR__ . '/lib/services.php';
 require_once __DIR__ . '/lib/sync.php';
 require_once __DIR__ . '/lib/settings.php';
+require_once __DIR__ . '/lib/cdn.php';
 
 function enhance_importer_config(): array
 {
@@ -57,6 +58,7 @@ function enhance_importer_upgrade(array $vars): void
 function enhance_importer_ensure_schema(): void
 {
     EnhanceSettings::ensureTable();
+    EnhanceCdnStore::ensure();
     $schema = Capsule::schema();
     if (!$schema->hasTable('mod_enhance_package_map')) {
         $schema->create('mod_enhance_package_map', function ($table) {
@@ -112,7 +114,7 @@ function enhance_importer_output(array $vars): void
 
     $moduleLink = $vars['modulelink'];
     $tab = (string) ($_REQUEST['tab'] ?? 'packages');
-    if (!in_array($tab, ['packages', 'services', 'sync', 'settings'], true)) $tab = 'packages';
+    if (!in_array($tab, ['packages', 'services', 'sync', 'settings', 'cdn'], true)) $tab = 'packages';
 
     $servers      = Capsule::table('tblservers')->where('type', 'enhance')->where('disabled', 0)->orderBy('name')->get();
     $groups       = Capsule::table('tblproductgroups')->orderBy('order')->orderBy('name')->get();
@@ -131,10 +133,10 @@ function enhance_importer_output(array $vars): void
         echo enhance_importer_alert('danger', enhance_importer_t('imp.bad_token'));
     }
 
-    // Settings need no Enhance server or API call.
-    if ($tab === 'settings') {
+    // Settings and WDH-CDN need no Enhance server or API call.
+    if ($tab === 'settings' || $tab === 'cdn') {
         try {
-            enhance_importer_settings_page($moduleLink);
+            $tab === 'cdn' ? enhance_importer_cdn_page($moduleLink) : enhance_importer_settings_page($moduleLink);
         } catch (Throwable $e) {
             echo enhance_importer_alert('danger', enhance_importer_t('imp.error', ['detail' => $e->getMessage()]));
         }
@@ -175,6 +177,7 @@ function enhance_importer_tabs(string $moduleLink, string $active, int $serverId
         'services' => EnhanceLang::t('imp.tab_services'),
         'sync'     => EnhanceLang::t('imp.tab_sync'),
         'settings' => EnhanceLang::t('imp.tab_settings'),
+        'cdn'      => 'WDH-CDN',
     ];
     $html = '<ul class="nav nav-tabs" style="margin:15px 0;">';
     foreach ($tabs as $key => $label) {

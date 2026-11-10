@@ -326,6 +326,74 @@
         font-size: 13px;
         padding: 0 4px;
     }
+    /* WDH-CDN indicator, to the right of the tool buttons (own line on small screens) */
+    .wd-enhance-cdn {
+        margin-left: auto;
+        min-width: 240px;
+        max-width: 340px;
+        border: 1px solid #e7ecf2;
+        border-radius: 10px;
+        padding: 7px 12px;
+        font-size: 12px;
+        color: #475569;
+        background: #fafcff;
+    }
+    .wd-enhance-cdn-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        color: #25364d;
+        margin-bottom: 2px;
+    }
+    .wd-enhance-cdn-small {
+        font-size: 11px;
+        color: #6b778c;
+    }
+    .wd-enhance-cdn-bar {
+        height: 6px;
+        border-radius: 999px;
+        background: #edf1f6;
+        overflow: hidden;
+        margin: 4px 0;
+    }
+    .wd-enhance-cdn-bar span {
+        display: block;
+        height: 100%;
+        border-radius: 999px;
+        background: var(--enhance-primary);
+    }
+    .wd-enhance-cdn.is-warn .wd-enhance-cdn-bar span {
+        background: #e0802b;
+    }
+    .wd-enhance-cdn.is-crit .wd-enhance-cdn-bar span {
+        background: #c0392b;
+    }
+    @media (max-width: 767px) {
+        .wd-enhance-cdn {
+            margin-left: 0;
+            max-width: none;
+            width: 100%;
+        }
+        .wd-enhance-backups,
+        .wd-enhance-backups tbody {
+            display: block;
+        }
+        .wd-enhance-backups tr {
+            display: flex;
+            flex-wrap: wrap;
+            border-top: 1px solid #eef2f6;
+        }
+        .wd-enhance-backups td,
+        .wd-enhance-backups th {
+            border-top: 0;
+        }
+        .wd-enhance-backups td:last-child {
+            flex-basis: 100%;
+        }
+        .wd-enhance-backups td:last-child:empty {
+            display: none;
+        }
+    }
 </style>
 
 <div class="wd-enhance-client-card"{if $colorPrimary} data-color-fixed="1" style="--enhance-primary: {$colorPrimary};{if $colorSecondary} --enhance-secondary: {$colorSecondary};{/if}"{/if}>
@@ -404,6 +472,34 @@
                                 <span class="wd-enhance-status is-off">{$enhanceLang.inactive|escape}</span>
                             {/if}
                         </h4>
+                        {capture name=cdnbox}{if $site.cdn}
+                            <div class="wd-enhance-cdn{if $site.cdn.active && $site.cdn.level} is-{$site.cdn.level}{/if}">
+                                <div class="wd-enhance-cdn-head">
+                                    <strong>WDH-CDN</strong>
+                                    {if $site.cdn.active}
+                                        <span class="wd-enhance-status">{$enhanceLang.cdn_active|escape}</span>
+                                    {else}
+                                        <span class="wd-enhance-status is-off">{$enhanceLang.cdn_inactive|escape}</span>
+                                    {/if}
+                                </div>
+                                {if $site.cdn.active}
+                                    {if $site.cdn.has_data}
+                                        <div class="wd-enhance-cdn-line">{$enhanceLang.cdn_month|escape}: <strong>{$site.cdn.month_used|escape}</strong>{if $site.cdn.month_limit} / {$site.cdn.month_limit|escape}{/if}</div>
+                                        {if $site.cdn.percent !== null}
+                                            <div class="wd-enhance-cdn-bar"><span style="width: {$site.cdn.percent|intval}%;"></span></div>
+                                        {/if}
+                                        {if $site.cdn.year_used}
+                                            <div class="wd-enhance-cdn-line wd-enhance-cdn-small">{$enhanceLang.cdn_year|replace:':from':$site.cdn.year_from|replace:':to':$site.cdn.year_to|escape}: {$site.cdn.year_used|escape} / {$site.cdn.year_limit|escape}</div>
+                                        {/if}
+                                        {if $site.cdn.stale}
+                                            <div class="wd-enhance-cdn-small">{$enhanceLang.cdn_last_known|replace:':date':$site.cdn.updated|escape}</div>
+                                        {/if}
+                                    {else}
+                                        <div class="wd-enhance-cdn-small">{$enhanceLang.cdn_collecting|escape}</div>
+                                    {/if}
+                                {/if}
+                            </div>
+                        {/if}{/capture}
                         {if $site.tools}
 
                             {if $site.tools.ssl}
@@ -447,6 +543,7 @@
                                         <i class="fab fa-wordpress"></i> {$enhanceLang.wordpress|escape}{if $wp.path} ({$wp.path|escape}){/if}
                                     </a>
                                 {/foreach}
+                                {$smarty.capture.cdnbox}
                             </div>
 
                             {if $site.tools.backups}
@@ -477,6 +574,8 @@
                                     {/foreach}
                                 </table>
                             {/if}
+                        {elseif $site.cdn}
+                            <div class="wd-enhance-tools-row">{$smarty.capture.cdnbox}</div>
                         {/if}
                     </div>
                 {/foreach}

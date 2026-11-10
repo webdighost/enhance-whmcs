@@ -43,7 +43,27 @@ class EnhanceSettings
         'cache_ttl'          => ['type' => 'int',   'default' => 300,     'constant' => 'ENHANCE_CLIENTAREA_CACHE_TTL', 'min' => 0, 'max' => 3600],
         // Backup restore (per product option + global switch)
         'restore_enabled'    => ['type' => 'bool',  'default' => true,    'constant' => 'ENHANCE_CLIENTAREA_RESTORE'],
+        // WDH-CDN (monitoring of CDN pull zones, see EnhanceCdn.php)
+        'cdn_enabled'        => ['type' => 'bool',    'default' => false, 'constant' => 'ENHANCE_CDN_ENABLED'],
+        'cdn_api_key'        => ['type' => 'secret',  'default' => '',    'constant' => 'ENHANCE_CDN_API_KEY'],
+        'cdn_sync_hours'     => ['type' => 'int',     'default' => 24,    'constant' => 'ENHANCE_CDN_SYNC_HOURS', 'min' => 1, 'max' => 168],
+        'cdn_show_inactive'  => ['type' => 'bool',    'default' => true,  'constant' => 'ENHANCE_CDN_SHOW_INACTIVE'],
+        'cdn_alerts'         => ['type' => 'bool',    'default' => true,  'constant' => 'ENHANCE_CDN_ALERTS'],
+        'cdn_warn_pct'       => ['type' => 'int',     'default' => 80,    'constant' => 'ENHANCE_CDN_WARN_PCT', 'min' => 1, 'max' => 100],
+        'cdn_crit_pct'       => ['type' => 'int',     'default' => 100,   'constant' => 'ENHANCE_CDN_CRIT_PCT', 'min' => 1, 'max' => 1000],
+        'cdn_retention_months' => ['type' => 'int',   'default' => 24,    'constant' => 'ENHANCE_CDN_RETENTION_MONTHS', 'min' => 3, 'max' => 120],
+        'cdn_debug'          => ['type' => 'bool',    'default' => false, 'constant' => 'ENHANCE_CDN_DEBUG'],
+        // WDH-CDN plans: monthly traffic (GB) and annual price (EUR, without VAT)
+        'cdn_plan_business_gb'    => ['type' => 'int',     'default' => 10,  'constant' => 'ENHANCE_CDN_PLAN_BUSINESS_GB', 'min' => 1, 'max' => 1000000],
+        'cdn_plan_standard_gb'    => ['type' => 'int',     'default' => 25,  'constant' => 'ENHANCE_CDN_PLAN_STANDARD_GB', 'min' => 1, 'max' => 1000000],
+        'cdn_plan_volume_gb'      => ['type' => 'int',     'default' => 75,  'constant' => 'ENHANCE_CDN_PLAN_VOLUME_GB', 'min' => 1, 'max' => 1000000],
+        'cdn_plan_business_price' => ['type' => 'decimal', 'default' => 0.0,  'constant' => 'ENHANCE_CDN_PLAN_BUSINESS_PRICE', 'min' => 0, 'max' => 100000],
+        'cdn_plan_standard_price' => ['type' => 'decimal', 'default' => 25.0, 'constant' => 'ENHANCE_CDN_PLAN_STANDARD_PRICE', 'min' => 0, 'max' => 100000],
+        'cdn_plan_volume_price'   => ['type' => 'decimal', 'default' => 50.0, 'constant' => 'ENHANCE_CDN_PLAN_VOLUME_PRICE', 'min' => 0, 'max' => 100000],
     ];
+
+    /** WDH-CDN plans, in display order. */
+    const CDN_PLANS = ['business', 'standard', 'volume'];
 
     /** @var array<string, string>|null */
     private static ?array $stored = null;
@@ -58,7 +78,11 @@ class EnhanceSettings
             return self::cast($key, constant($def['constant']));
         }
         $stored = self::stored();
-        return array_key_exists($key, $stored) ? self::cast($key, $stored[$key]) : $def['default'];
+        if (!array_key_exists($key, $stored)) return $def['default'];
+        if ($def['type'] === 'secret') {
+            return self::decryptSecret($stored[$key]);
+        }
+        return self::cast($key, $stored[$key]);
     }
 
     /** All settings with their value and whether config.php locks them. */
@@ -66,7 +90,15 @@ class EnhanceSettings
     {
         $out = [];
         foreach (self::DEFINITIONS as $key => $def) {
-            $out[$key] = ['value' => self::get($key), 'locked' => defined($def['constant']), 'constant' => $def['constant']] + $def;
+            $value = self::get($key);
+            $row = ['value' => $value, 'locked' => defined($def['constant']), 'constant' => $def['constant']] + $def;
+            if ($def['type'] === 'secret') {
+                // A secret never leaves the server: only whether it is set and its last 4 characters.
+                $row['value'] = '';
+                $row['configured'] = $value !== '';
+                $row['hint'] = $value !== '' ? substr((string) $value, -4) : '';
+            }
+            $out[$key] = $row;
         }
         return $out;
     }
@@ -75,36 +107,85 @@ class EnhanceSettings
      * Validates and stores the given values (locked settings are ignored).
      * @return string[] keys rejected as invalid
      */
-    public static function save(array $input): array
+    public static function save(array $input, ?array $only = null): array
     {
         self::ensureTable();
         $invalid = [];
         foreach (self::DEFINITIONS as $key => $def) {
+            // Each form saves only its own settings (an unposted checkbox would otherwise turn others off).
+            if ($only !== null && !in_array($key, $only, true)) continue;
             if (defined($def['constant'])) continue;
             // Unchecked checkboxes are not posted: a missing bool means false.
             if (!array_key_exists($key, $input) && $def['type'] !== 'bool') continue;
             $raw = $input[$key] ?? '';
+            if ($def['type'] === 'secret') {
+                // An empty field keeps the stored secret (it is never shown again).
+                if (trim((string) $raw) === '') continue;
+                $value = self::validate($key, $raw);
+                if ($value === null) {
+                    $invalid[] = $key;
+                    continue;
+                }
+                self::store($key, self::encryptSecret($value));
+                continue;
+            }
             $value = self::validate($key, $raw);
             if ($value === null) {
                 $invalid[] = $key;
                 continue;
             }
-            $stored = is_bool($value) ? ($value ? '1' : '0') : (string) $value;
-            if (Capsule::table(self::TABLE)->where('setting', $key)->exists()) {
-                Capsule::table(self::TABLE)->where('setting', $key)->update(['value' => $stored]);
-            } else {
-                Capsule::table(self::TABLE)->insert(['setting' => $key, 'value' => $stored]);
-            }
+            self::store($key, is_bool($value) ? ($value ? '1' : '0') : (string) $value);
         }
         self::$stored = null;
         return $invalid;
     }
 
+    /** Setting keys of one form: those starting with $prefix, or all others when $exclude is true. */
+    public static function keys(string $prefix, bool $exclude = false): array
+    {
+        return array_values(array_filter(array_keys(self::DEFINITIONS), fn($k) => (strpos($k, $prefix) === 0) !== $exclude));
+    }
+
+    /** Removes a stored secret (the "remove key" action). */
+    public static function clearSecret(string $key): void
+    {
+        if ((self::DEFINITIONS[$key]['type'] ?? '') !== 'secret' || defined(self::DEFINITIONS[$key]['constant'])) return;
+        self::ensureTable();
+        Capsule::table(self::TABLE)->where('setting', $key)->delete();
+        self::$stored = null;
+    }
+
+    private static function store(string $key, string $value): void
+    {
+        if (Capsule::table(self::TABLE)->where('setting', $key)->exists()) {
+            Capsule::table(self::TABLE)->where('setting', $key)->update(['value' => $value]);
+        } else {
+            Capsule::table(self::TABLE)->insert(['setting' => $key, 'value' => $value]);
+        }
+    }
+
+    /** Secrets are stored with the WHMCS encryption (cc_encryption_hash); never in plain text. */
+    private static function encryptSecret(string $plain): string
+    {
+        if (!function_exists('encrypt')) {
+            throw new RuntimeException('WHMCS encryption is not available: the secret was not saved.');
+        }
+        return 'enc:' . encrypt($plain);
+    }
+
+    private static function decryptSecret(string $stored): string
+    {
+        if (strpos($stored, 'enc:') !== 0 || !function_exists('decrypt')) return '';
+        return (string) decrypt(substr($stored, 4));
+    }
+
     /** Restores every stored setting to its default. */
-    public static function reset(): void
+    public static function reset(?array $only = null): void
     {
         self::ensureTable();
-        Capsule::table(self::TABLE)->delete();
+        $query = Capsule::table(self::TABLE);
+        if ($only !== null) $query->whereIn('setting', $only);
+        $query->delete();
         self::$stored = null;
     }
 
@@ -135,6 +216,14 @@ class EnhanceSettings
             case 'enum':
                 $raw = trim((string) $raw);
                 return in_array($raw, $def['options'], true) ? $raw : null;
+            case 'decimal':
+                $raw = str_replace(',', '.', trim((string) $raw));
+                if (!preg_match('/^\d+(\.\d{1,2})?$/', $raw)) return null;
+                return max((float) $def['min'], min((float) $def['max'], round((float) $raw, 2)));
+            case 'secret':
+                // API keys: printable, no spaces (spaces and line breaks from copy & paste are removed).
+                $raw = (string) preg_replace('/\s+/', '', (string) $raw);
+                return ($raw !== '' && strlen($raw) <= 200 && preg_match('/^[\x21-\x7e]+$/', $raw)) ? $raw : null;
         }
         return null;
     }
@@ -147,6 +236,9 @@ class EnhanceSettings
 
     private static function cast(string $key, $value)
     {
+        if (self::DEFINITIONS[$key]['type'] === 'secret') {
+            return (string) (self::validate($key, $value) ?? '');
+        }
         $valid = self::validate($key, is_bool($value) ? ($value ? '1' : '0') : $value);
         return $valid === null ? self::DEFINITIONS[$key]['default'] : $valid;
     }

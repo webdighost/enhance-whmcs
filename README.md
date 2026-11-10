@@ -27,17 +27,22 @@ subscription, website, last module action and last error, link/repair the subscr
 **Enhance Manager** addon: client area settings, Enhance plans to products, existing subscriptions to
 services, synchronisation.
 
+**WDH-CDN (optional):** per-website CDN traffic monitoring (bunny.net, read only) with the calendar
+month and the annuity shown to the client with a progress bar, admin-only alerts and three plans.
+
 ## Contents
 
 ```
 includes/hooks/enhance.php                      Client profile panel; profile edits rename the organisation
 includes/hooks/enhance_importer_daily_sync.php  Daily status synchronisation (WHMCS cron)
+includes/hooks/enhance_cdn.php                  WDH-CDN statistics synchronisation (WHMCS cron)
 modules/addons/enhance_importer/                Importer addon
   enhance_importer.php   Addon entry points, tabs, shared helpers
   lib/packages.php       Enhance Plans tab
   lib/services.php       Existing Services tab
   lib/sync.php           Synchronisation tab
   lib/settings.php       Settings tab
+  lib/cdn.php            WDH-CDN tab
 modules/servers/enhance/                        Server module
   enhance.php            Module functions (provisioning, SSO, client area and tools, admin tab)
   EnhanceApi.php         API client (authentication, transport, diagnostics, all API calls)
@@ -45,6 +50,10 @@ modules/servers/enhance/                        Server module
   EnhanceSync.php        Status and usage synchronisation
   EnhanceLang.php        Translation loader
   EnhanceSettings.php    Settings (mod_enhance_settings) and config.php overrides
+  EnhanceCdn.php         WDH-CDN provider client (read only)
+  EnhanceCdnStore.php    WDH-CDN associations, daily traffic, alerts
+  EnhanceCdnSync.php     WDH-CDN synchronisation and alerts
+  EnhanceCdnUi.php       WDH-CDN service tab block and client area data
   lang/english.php       English (source)
   lang/portuguese-pt.php European Portuguese
   templates/clientarea.tpl
@@ -136,6 +145,62 @@ it is then shown as locked in the Settings tab.
 - The panel login button that WHMCS shows on the admin service page uses the same SSO function as
   the client area: the admin enters as the client (organisation owner), and this is written to the
   activity log.
+
+## WDH-CDN (CDN traffic monitoring)
+
+Optional and off by default. The module **only reads** statistics from the CDN provider (bunny.net): it
+never creates, changes, suspends or deletes Pull Zones. Each website is associated manually by the admin.
+The client area shows the brand **WDH-CDN** only; the provider is never named to clients.
+
+**Setup**
+1. Addons > Enhance Manager > **WDH-CDN**: enable the integration, paste the provider account API key
+   (bunny.net > Account > API key) and save. Use **Test connection**.
+2. Check the plans (monthly traffic and annual price, informative only - there is no invoicing):
+
+   | Plan | Monthly traffic | Annual price (no VAT) |
+   |---|---|---|
+   | WDH-CDN Business | 10 GB | free |
+   | WDH-CDN Standard | 25 GB | 25,00 € |
+   | WDH-CDN Volume | 75 GB | 50,00 € |
+
+3. In the service tab (Clients > service), block **WDH-CDN**, per website: tick *CDN active*, CDN
+   address (for example `site.wdh-cdn.eu`), Pull Zone ID, plan, optional limit (overrides the plan) and
+   the activation date (start of the annuity). Save the service; tick *Update statistics on save* to fetch
+   the data at once. The Pull Zone and the address are checked against the provider when they change.
+   A Pull Zone already used by another client's website needs an explicit confirmation.
+
+**Calculation**
+- Traffic is stored per day (UTC) and per website, `mod_enhance_cdn_daily`; every period is computed
+  from these rows. 1 GB = 1024³ bytes.
+- **Month**: calendar month. **Annuity**: 12 months from the activation date anniversary; the annual
+  limit is the monthly limit × 12.
+- Synchronisation every `cdn_sync_hours` (default 24 h) through the WHMCS cron: the last 3 days are
+  fetched again (the provider corrects recent days), and missing history is filled from the start of the
+  annuity (at most 400 days, 31 days per request). Idempotent; days before the activation date are ignored.
+- The client area reads only local data (no provider call on page view) and shows "last known usage"
+  when the data is older than twice the interval.
+
+**Alerts** (admin only): at the warning and critical percentages (default 80 % and 100 %), per month and
+per annuity, once per level and period, in the activity log and in the WDH-CDN tab, where they can be
+marked as seen. Clients are never notified.
+
+**Security**
+- The API key is stored encrypted with the WHMCS encryption (`enc:` prefix), never shown again (only
+  the last 4 characters), never logged and only used by the server. `ENHANCE_CDN_API_KEY` in
+  `config.php` can provide it instead.
+- Only `GET` requests to `https://api.bunny.net` (fixed host, HTTPS only, no redirects), with
+  `includeCertificate=false` so certificates and private keys of Pull Zones are never downloaded. The
+  CDN address is only compared with the Pull Zone hostnames, never requested (no SSRF).
+- The Module Log receives only a summary (status, size, error) with the key masked, never response bodies.
+- Retries with back-off on HTTP 429 and 5xx.
+
+**Limitations**
+- The provider API has no cost per period: the admin block shows the provider's charge for the current
+  calendar month of the Pull Zone (USD), for reference only.
+- Days are UTC days; a Pull Zone shared by several websites is counted in full for each of them.
+- No automatic invoicing or traffic blocking in this version.
+- Privacy: add bunny.net as a sub-processor in your privacy policy (it processes visitor traffic,
+  not data sent by this module).
 
 ## Replacing the official Enhance module (1.1.x)
 

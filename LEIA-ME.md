@@ -23,6 +23,9 @@ separador do serviço (organização, subscrição, website, última ação do m
 associar/reparar a subscrição) e o addon **Enhance Manager**: definições da área de cliente, planos
 Enhance para produtos, subscrições existentes para serviços, sincronização.
 
+**WDH-CDN (opcional):** monitorização do tráfego CDN por website (bunny.net, só leitura), com o mês civil
+e a anuidade mostrados ao cliente com barra de progresso, alertas só para a administração e três planos.
+
 ## Instalação e atualização
 
 1. Copie as pastas `includes/` e `modules/` para a raiz do WHMCS, substituindo os ficheiros. Os nomes
@@ -109,6 +112,64 @@ mantêm-nas. Para forçar uma definição a partir dos ficheiros, retire o comen
 - O botão de entrada no painel que o WHMCS mostra na página do serviço no admin usa a mesma função de SSO
   da área de cliente: o administrador entra como o cliente (titular da organização), e isso fica registado
   no registo de atividade.
+
+## WDH-CDN (monitorização do tráfego CDN)
+
+Opcional e desligado por omissão. O módulo **só lê** estatísticas do fornecedor de CDN (bunny.net): nunca
+cria, altera, suspende ou elimina Pull Zones. Cada website é associado manualmente pela administração.
+A área de cliente mostra apenas a marca **WDH-CDN**; o fornecedor nunca é indicado ao cliente.
+
+**Configuração**
+1. Addons > Enhance Manager > **WDH-CDN**: ative a integração, cole a chave de API da conta do fornecedor
+   (bunny.net > Account > API key) e guarde. Use **Testar ligação**.
+2. Confirme os planos (tráfego mensal e preço anual, apenas informativo - não há faturação):
+
+   | Plano | Tráfego mensal | Preço anual (sem IVA) |
+   |---|---|---|
+   | WDH-CDN Business | 10 GB | gratuito |
+   | WDH-CDN Standard | 25 GB | 25,00 € |
+   | WDH-CDN Volume | 75 GB | 50,00 € |
+
+3. No separador do serviço (Clientes > serviço), bloco **WDH-CDN**, por website: marque *CDN ativo*,
+   endereço CDN (por exemplo `site.wdh-cdn.eu`), Pull Zone ID, plano, limite opcional (substitui o do
+   plano) e data de ativação (início da anuidade). Guarde o serviço; marque *Atualizar estatísticas ao
+   guardar* para obter logo os dados. A Pull Zone e o endereço são validados no fornecedor quando mudam.
+   Uma Pull Zone já usada no website de outro cliente exige confirmação explícita.
+
+**Cálculo**
+- O tráfego é guardado por dia (UTC) e por website, em `mod_enhance_cdn_daily`; todos os períodos são
+  calculados a partir destas linhas. 1 GB = 1024³ bytes.
+- **Mês**: mês civil. **Anuidade**: 12 meses a partir do aniversário da data de ativação; o limite anual
+  é o limite mensal × 12.
+- Sincronização a cada `cdn_sync_hours` (24 h por omissão) pelo cron do WHMCS: os últimos 3 dias são
+  sempre pedidos de novo (o fornecedor corrige os dias recentes) e o histórico em falta é preenchido desde
+  o início da anuidade (máximo 400 dias, 31 dias por pedido). Idempotente; os dias anteriores à ativação
+  são ignorados.
+- A área de cliente lê apenas dados locais (nenhum pedido ao fornecedor ao abrir a página) e mostra
+  "último consumo conhecido" quando os dados têm mais do dobro do intervalo.
+
+**Alertas** (só administração): nas percentagens de aviso e crítico (80 % e 100 % por omissão), por mês e
+por anuidade, uma vez por nível e período, no registo de atividade e no separador WDH-CDN, onde podem ser
+marcados como vistos. Os clientes nunca são notificados.
+
+**Segurança**
+- A chave de API é guardada cifrada com a encriptação do WHMCS (prefixo `enc:`), nunca volta a ser
+  mostrada (só os últimos 4 caracteres), nunca é registada e só é usada pelo servidor. Em alternativa,
+  `ENHANCE_CDN_API_KEY` no `config.php`.
+- Apenas pedidos `GET` a `https://api.bunny.net` (host fixo, só HTTPS, sem redirecionamentos), com
+  `includeCertificate=false`, para nunca descarregar certificados nem chaves privadas das Pull Zones. O
+  endereço CDN só é comparado com os hostnames da Pull Zone, nunca é pedido (sem SSRF).
+- O Registo de Módulos recebe apenas um resumo (estado, tamanho, erro) com a chave mascarada, nunca o
+  conteúdo das respostas.
+- Novas tentativas com espera em HTTP 429 e 5xx.
+
+**Limitações**
+- A API do fornecedor não indica o custo por período: o bloco da administração mostra o custo da Pull
+  Zone no mês civil atual (USD), apenas como referência.
+- Os dias são dias UTC; uma Pull Zone partilhada por vários websites conta por inteiro em cada um.
+- Sem faturação automática nem bloqueio de tráfego nesta versão.
+- Privacidade: inclua a bunny.net como subcontratante na política de privacidade (trata o tráfego dos
+  visitantes, não dados enviados por este módulo).
 
 ## Substituir o módulo oficial do Enhance (1.1.x)
 
