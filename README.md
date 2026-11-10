@@ -1,4 +1,4 @@
-# Enhance for WHMCS - v1.5.0
+# Enhance for WHMCS - v1.5.1
 
 WHMCS server module, management addon (Enhance Manager) and hooks that connect WHMCS to the
 [Enhance](https://enhance.com) control panel through its REST API.

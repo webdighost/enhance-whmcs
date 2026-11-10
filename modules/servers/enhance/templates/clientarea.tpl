@@ -1,4 +1,4 @@
-{* Enhance WHMCS Module - Client Area (v1.5.0). Texts: lang/*.php, keys "ca.*" *}
+{* Enhance WHMCS Module - Client Area (v1.5.1). Texts: lang/*.php, keys "ca.*" *}
 
 <style>
     /*

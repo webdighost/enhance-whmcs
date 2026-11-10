@@ -1,6 +1,6 @@
 <?php
 /**
- * Enhance Manager for WHMCS (v1.5.0) - addon folder "enhance_importer"
+ * Enhance Manager for WHMCS (v1.5.1) - addon folder "enhance_importer"
  *
  * Imports Enhance plans as WHMCS products and existing Enhance subscriptions
  * as WHMCS services, runs the status synchronisation on demand and manages

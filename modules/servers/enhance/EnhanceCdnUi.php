@@ -1,6 +1,6 @@
 <?php
 /**
- * CDN - admin service tab block, its save handler and client area data (v1.5.0)
+ * CDN - admin service tab block, its save handler and client area data (v1.5.1)
  *
  * The CDN is configured per Enhance website by the admin, in the service tab:
  * the fields are part of the WHMCS service form (CSRF and permissions by WHMCS)

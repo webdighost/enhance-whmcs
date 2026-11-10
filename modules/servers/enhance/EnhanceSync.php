@@ -1,6 +1,6 @@
 <?php
 /**
- * Enhance WHMCS Module - status and usage synchronisation (v1.5.0)
+ * Enhance WHMCS Module - status and usage synchronisation (v1.5.1)
  * Shared by the daily cron hook, the importer addon and the server module.
  */
 

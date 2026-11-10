@@ -1,6 +1,6 @@
 <?php
 /**
- * Enhance API wrapper for WHMCS (v1.5.0)
+ * Enhance API wrapper for WHMCS (v1.5.1)
  *
  * Credentials are injected per instance from the WHMCS server, so several
  * Enhance servers can coexist in the same WHMCS installation:
@@ -29,7 +29,7 @@ use WHMCS\Database\Capsule;
 
 class EnhanceApi
 {
-    const VERSION                = '1.5.0';
+    const VERSION                = '1.5.1';
     const MODULE                 = 'enhance';
     const FIELD_CLIENT_ORG_ID    = 'EnhanceOrgId';
     const FIELD_SUBSCRIPTION_ID  = 'SUBSCRIPTION_ID';

@@ -1,6 +1,6 @@
 <?php
 /**
- * CDN - statistics synchronisation and admin alerts (v1.5.0)
+ * CDN - statistics synchronisation and admin alerts (v1.5.1)
  *
  * Run by the WHMCS cron (includes/hooks/enhance_cdn.php) at the interval set in
  * Addons > Enhance Manager > CDN, and on demand by the admin.

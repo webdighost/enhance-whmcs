@@ -1,6 +1,6 @@
 <?php
 /**
- * Enhance daily synchronisation hook (v1.5.0)
+ * Enhance daily synchronisation hook (v1.5.1)
  *
  * Runs with the WHMCS daily cron for every enabled Enhance server and mirrors
  * the Enhance suspension state onto all linked services (created or imported).

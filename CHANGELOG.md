@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.1 - 2026-11-10
+- Fixed: Addons > Enhance Manager > CDN stopped with "Call to undefined function _enhance_cdn_plans()".
+  WHMCS does not load the server module on addon pages; the CDN tab now loads the CDN code itself.
+- New test group that runs Enhance Manager without the server module, as WHMCS does.
+
 ## 1.5.0 - 2026-11-10
 
 ### CDN

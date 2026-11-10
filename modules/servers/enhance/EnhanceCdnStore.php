@@ -1,6 +1,6 @@
 <?php
 /**
- * CDN - local storage (v1.5.0)
+ * CDN - local storage (v1.5.1)
  *
  *   mod_enhance_cdn_sites   CDN configuration per Enhance website (manual, by the admin)
  *   mod_enhance_cdn_daily   traffic per website, pull zone and UTC day (unique: re-syncs replace, never add)

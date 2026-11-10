@@ -1,4 +1,4 @@
-# Enhance para WHMCS - v1.5.0 (guia em português)
+# Enhance para WHMCS - v1.5.1 (guia em português)
 
 Módulo de servidor, addon de gestão (Enhance Manager) e hooks que ligam o WHMCS ao painel
 [Enhance](https://enhance.com) através da API REST. Interface em inglês com tradução completa em

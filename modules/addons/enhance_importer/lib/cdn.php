@@ -10,7 +10,8 @@ if (!defined('WHMCS')) {
 }
 
 // modules/addons/enhance_importer/lib/cdn.php -> dirname(__FILE__, 4) is the modules folder.
-require_once dirname(__FILE__, 4) . '/servers/enhance/EnhanceCdnSync.php';
+// The server module (enhance.php) is not loaded on addon pages: load the CDN code it would bring.
+require_once dirname(__FILE__, 4) . '/servers/enhance/EnhanceCdnUi.php';
 
 function enhance_importer_cdn_page(string $moduleLink): void
 {

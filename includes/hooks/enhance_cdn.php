@@ -1,6 +1,6 @@
 <?php
 /**
- * CDN statistics synchronisation hook (v1.5.0)
+ * CDN statistics synchronisation hook (v1.5.1)
  *
  * Runs after every WHMCS cron execution and synchronises the CDN statistics when
  * the interval set in Addons > Enhance Manager > CDN has passed (default 24 h).

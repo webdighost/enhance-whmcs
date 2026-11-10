@@ -32,7 +32,12 @@ if ($fresh) {
     Manager::table('tblclients')->insert(['id' => 9, 'firstname' => 'Ana', 'lastname' => 'Silva', 'companyname' => 'Acme Lda', 'email' => 'a@x.pt']);
     Manager::table('tblhosting')->insert(['id' => 50, 'userid' => 9, 'packageid' => 10, 'server' => 1, 'domain' => 'acme.pt']);
 }
-require $GLOBALS['ENHANCE_ROOT'] . '/modules/servers/enhance/enhance.php';
+// The addon page in WHMCS does not load the server module: addon-only tests skip it.
+if (empty($GLOBALS['ENHANCE_ADDON_ONLY'])) {
+    require $GLOBALS['ENHANCE_ROOT'] . '/modules/servers/enhance/enhance.php';
+} else {
+    require_once $GLOBALS['ENHANCE_ROOT'] . '/modules/servers/enhance/EnhanceStore.php';
+}
 if ($fresh) {
     EnhanceStore::ensure();
     EnhanceStore::setClientOrg(9, 1, 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee');

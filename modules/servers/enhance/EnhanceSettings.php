@@ -1,6 +1,6 @@
 <?php
 /**
- * Enhance WHMCS Module - settings (v1.5.0)
+ * Enhance WHMCS Module - settings (v1.5.1)
  *
  * Settings are edited in Addons > Enhance Manager > Settings and stored in the
  * table mod_enhance_settings. A constant defined in config.php (see the list in

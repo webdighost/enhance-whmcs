@@ -49,6 +49,7 @@ run "Client area template (Smarty)"      $PHP render_test.php "$ENHANCE_ROOT"
 run "Settings (Enhance Manager)"         $PHP settings_test.php "$ENHANCE_ROOT"
 run "Settings locked by config.php"      $PHP settings_test.php "$ENHANCE_ROOT" locked
 run "CDN"                                 $PHP cdn_test.php "$ENHANCE_ROOT"
+run "Enhance Manager without the server module" $PHP addon_only_test.php "$ENHANCE_ROOT"
 
 echo "== Client area tools (HTTP redirects)"
 rm -f "$TMP/tools.db" "$TMP/activity.log"

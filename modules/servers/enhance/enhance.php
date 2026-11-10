@@ -1,6 +1,6 @@
 <?php
 /**
- * Enhance WHMCS Server Module v1.5.0
+ * Enhance WHMCS Server Module v1.5.1
  *
  * Supports: account creation, suspension, termination, plan change, SSO,
  * admin services tab, dynamic plan dropdown, connection test, usage update.
