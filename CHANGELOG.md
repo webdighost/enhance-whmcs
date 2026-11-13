@@ -13,8 +13,7 @@
   synchronisation, alerts, plans, sites overview) and a CDN block per website in the service tab
   (websites without CDN are collapsed).
 - Generic and configurable: the **name shown to clients** (default "CDN", e.g. your own brand) and the
-  name, monthly traffic and annual price of each of the three plans (defaults Business 10 GB free,
-  Standard 25 GB 25 €/year, Volume 75 GB 50 €/year).
+  name, monthly traffic and annual price of each of the three plans, set by each installation.
 - Client area: a CDN strip under each website's tools with the calendar month usage, a progress bar and
   the annuity total, from local data only; the provider is never named to clients.
 - Daily rows (`mod_enhance_cdn_daily`), idempotent synchronisation through the WHMCS cron (last 3 days

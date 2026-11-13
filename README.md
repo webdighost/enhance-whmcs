@@ -156,15 +156,8 @@ own brand); the provider is never named to clients. Plan names, traffic and pric
 **Setup**
 1. Addons > Enhance Manager > **CDN**: enable the integration, paste the provider account API key
    (bunny.net > Account > API key) and save. Use **Test connection**.
-2. Set the name shown to clients and the plans (name, monthly traffic and annual price, informative
-   only - there is no invoicing). Defaults:
-
-   | Plan | Monthly traffic | Annual price (no VAT) |
-   |---|---|---|
-   | Business | 10 GB | free |
-   | Standard | 25 GB | 25,00 € |
-   | Volume | 75 GB | 50,00 € |
-
+2. Set the name shown to clients and the three plans as you see fit: name, monthly traffic and annual
+   price (informative only - there is no invoicing).
 3. In the service tab (Clients > service), block **CDN** (or the name set), per website: tick *CDN active*, CDN
    address (for example `cdn.example.com`), Pull Zone ID, plan, optional limit (overrides the plan) and
    the activation date (start of the annuity). Save the service; tick *Update statistics on save* to fetch

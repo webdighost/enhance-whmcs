@@ -124,15 +124,8 @@ planos são editáveis.
 **Configuração**
 1. Addons > Enhance Manager > **CDN**: ative a integração, cole a chave de API da conta do fornecedor
    (bunny.net > Account > API key) e guarde. Use **Testar ligação**.
-2. Defina o nome mostrado aos clientes e os planos (nome, tráfego mensal e preço anual, apenas
-   informativo - não há faturação). Valores por omissão:
-
-   | Plano | Tráfego mensal | Preço anual (sem IVA) |
-   |---|---|---|
-   | Business | 10 GB | gratuito |
-   | Standard | 25 GB | 25,00 € |
-   | Volume | 75 GB | 50,00 € |
-
+2. Defina o nome mostrado aos clientes e os três planos como entender: nome, tráfego mensal e preço
+   anual (apenas informativo - não há faturação).
 3. No separador do serviço (Clientes > serviço), bloco **CDN** (ou o nome definido), por website: marque *CDN ativo*,
    endereço CDN (por exemplo `cdn.example.com`), Pull Zone ID, plano, limite opcional (substitui o do
    plano) e data de ativação (início da anuidade). Guarde o serviço; marque *Atualizar estatísticas ao
