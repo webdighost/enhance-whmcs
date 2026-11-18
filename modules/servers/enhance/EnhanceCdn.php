@@ -1,6 +1,6 @@
 <?php
 /**
- * CDN - read-only client of the CDN provider API (bunny.net), v1.5.1
+ * CDN - read-only client of the CDN provider API (bunny.net), v1.6.0
  *
  * Monitoring only: this class sends GET requests and never creates, changes,
  * suspends or deletes anything at the provider. Checked against the provider's

@@ -105,7 +105,7 @@ $activityBefore = count($GLOBALS['activity']);
 $raised = EnhanceCdnSync::checkAlerts(EnhanceCdnStore::site($WEB), $TODAY);
 $again = EnhanceCdnSync::checkAlerts(EnhanceCdnStore::site($WEB), $TODAY);
 $monthAlerts = array_filter($raised, fn($x) => strpos($x, 'month:') === 0);
-$check('limit exceeded: warning (80%) and critical (100%) alerts raised once, in the activity log', count($monthAlerts) === 2 && $again === [] && count($GLOBALS['activity']) === $activityBefore + 2 && strpos(end($GLOBALS['activity']), 'CDN:') === 0, json_encode([$raised, $again], JSON_UNESCAPED_UNICODE));
+$check('limit exceeded: warning (80%) and critical (100%) alerts raised once, in the activity log', count($monthAlerts) === 2 && $again === [] && count($GLOBALS['activity']) === $activityBefore + count($raised) && strpos(end($GLOBALS['activity']), 'CDN:') === 0, json_encode([$raised, $again], JSON_UNESCAPED_UNICODE));
 Capsule::table('mod_enhance_cdn_sites')->where('website_id', $WEB)->update(['limit_gb' => null]);
 EnhanceSettings::save(['cdn_alerts' => ''], ['cdn_alerts']);
 Capsule::table('mod_enhance_cdn_alerts')->delete();

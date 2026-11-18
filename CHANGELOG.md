@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.6.0 - 2026-11-18
+
+### Client area
+- **My Services list** (`clientarea.php?action=services`): "Open control panel" (single sign-on, new tab)
+  and "Manage" on each Enhance service, so clients find the panel without opening the service first.
+  Panel login only for active services and for the account owner or users with the WHMCS "Single
+  Sign-On" permission; suspended services show "Manage" only. Works with any theme, including
+  paginated tables. New hook `includes/hooks/enhance_services.php`; setting "Buttons in My Services"
+  in Enhance Manager > Settings (on by default).
+
+### Other
+- Permission check shared by the module and the hooks (`EnhanceAccess.php`).
+- CDN test no longer depends on the day of the month.
+
 ## 1.5.1 - 2026-11-10
 - Fixed: Addons > Enhance Manager > CDN stopped with "Call to undefined function _enhance_cdn_plans()".
   WHMCS does not load the server module on addon pages; the CDN tab now loads the CDN code itself.

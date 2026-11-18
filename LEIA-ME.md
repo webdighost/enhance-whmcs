@@ -1,4 +1,4 @@
-# Enhance para WHMCS - v1.5.1 (guia em português)
+# Enhance para WHMCS - v1.6.0 (guia em português)
 
 Módulo de servidor, addon de gestão (Enhance Manager) e hooks que ligam o WHMCS ao painel
 [Enhance](https://enhance.com) através da API REST. Interface em inglês com tradução completa em
@@ -64,6 +64,14 @@ pode pôr a sua palavra-passe do WHMCS no campo Password e o seu utilizador no U
 | Restauro de backups pelo cliente | configoption4 | Permite ao titular da conta restaurar backups na área de cliente. Desligado por omissão. |
 
 ## Ferramentas na área de cliente
+
+**Lista "Os Meus Serviços"** (`clientarea.php?action=services`): cada serviço Enhance passa a ter o botão
+**Aceder ao painel** (entrada direta num novo separador, a mesma da página do serviço) e o link
+**Gerir**. A entrada no painel só aparece em serviços ativos e ao titular da conta ou a utilizadores com a
+permissão "Single Sign-On" do WHMCS; os serviços suspensos mostram apenas *Gerir*. Os botões são colocados
+por um pequeno script, por isso funcionam com qualquer tema da área de cliente (incluindo tabelas
+paginadas). Desliga-se em Enhance Manager > Definições.
+
 
 Todos os websites do serviço são listados (1 ou 1000), por ordem de domínio, 5 por página por omissão,
 com pesquisa por domínio quando há mais de uma página. A lista de websites custa um pedido à API; as

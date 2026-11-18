@@ -1,4 +1,4 @@
-# Enhance for WHMCS - v1.5.1
+# Enhance for WHMCS - v1.6.0
 
 WHMCS server module, management addon (Enhance Manager) and hooks that connect WHMCS to the
 [Enhance](https://enhance.com) control panel through its REST API.
@@ -36,6 +36,7 @@ month and the annuity shown to the client with a progress bar, admin-only alerts
 includes/hooks/enhance.php                      Client profile panel; profile edits rename the organisation
 includes/hooks/enhance_importer_daily_sync.php  Daily status synchronisation (WHMCS cron)
 includes/hooks/enhance_cdn.php                  CDN statistics synchronisation (WHMCS cron)
+includes/hooks/enhance_services.php             "Open control panel" buttons in the client's services list
 modules/addons/enhance_importer/                Importer addon
   enhance_importer.php   Addon entry points, tabs, shared helpers
   lib/packages.php       Enhance Plans tab
@@ -50,6 +51,7 @@ modules/servers/enhance/                        Server module
   EnhanceSync.php        Status and usage synchronisation
   EnhanceLang.php        Translation loader
   EnhanceSettings.php    Settings (mod_enhance_settings) and config.php overrides
+  EnhanceAccess.php      Who may use the panel login and tools of a client
   EnhanceCdn.php         CDN provider client (read only)
   EnhanceCdnStore.php    CDN associations, daily traffic, alerts
   EnhanceCdnSync.php     CDN synchronisation and alerts
@@ -98,6 +100,13 @@ put your WHMCS password in Password and your username in Username.
 | Client backup restore | configoption4 | Lets the account owner restore backups in the client area. Off by default. |
 
 ## Client area tools
+
+**My Services list** (`clientarea.php?action=services`): each Enhance service gets an **Open control
+panel** button (single sign-on in a new tab, the same login as the service page) and a **Manage** link.
+The panel login is shown only for active services and to the account owner or users with the WHMCS
+"Single Sign-On" permission; suspended services show *Manage* only. Placed by a small script, so it works
+with any client area theme (including paginated tables). Off in Enhance Manager > Settings.
+
 
 Every website of the service is listed (1 or 1000), sorted by domain, 5 per page by default, with a
 domain search when there is more than one page. The website list costs one API call; the tools below are

@@ -1,6 +1,6 @@
 <?php
 /**
- * Enhance WHMCS Server Module v1.5.1
+ * Enhance WHMCS Server Module v1.6.0
  *
  * Supports: account creation, suspension, termination, plan change, SSO,
  * admin services tab, dynamic plan dropdown, connection test, usage update.
@@ -19,6 +19,7 @@ if (!defined('WHMCS')) {
     die('This file cannot be accessed directly.');
 }
 
+require_once __DIR__ . '/EnhanceAccess.php';
 require_once __DIR__ . '/EnhanceSync.php';
 require_once __DIR__ . '/EnhanceCdnUi.php';
 
@@ -954,23 +955,7 @@ function _enhance_clientarea_settings_key(): string
  */
 function _enhance_client_may_use_tools(array $params, bool $ownerOnly = false): bool
 {
-    if (!empty($_SESSION['adminid'])) return true;
-    $clientId = _enhance_client_id($params);
-    if (!class_exists('WHMCS\\Authentication\\CurrentUser')) {
-        return (int) ($_SESSION['uid'] ?? 0) === $clientId; // WHMCS 7
-    }
-    try {
-        $auth = new \WHMCS\Authentication\CurrentUser();
-        $user = $auth->user();
-        $client = $auth->client();
-        if (!$user || !$client || (int) $client->id !== $clientId) return false;
-        $link = Capsule::table('tblusers_clients')->where('auth_user_id', $user->id)->where('client_id', $clientId)->first();
-        if (!$link) return false;
-        if ((int) $link->owner === 1) return true;
-        return !$ownerOnly && in_array('productsso', array_map('trim', explode(',', (string) $link->permissions)), true);
-    } catch (Throwable $e) {
-        return false;
-    }
+    return EnhanceAccess::userMayUse(_enhance_client_id($params), $ownerOnly);
 }
 
 /**

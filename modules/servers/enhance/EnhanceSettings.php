@@ -1,6 +1,6 @@
 <?php
 /**
- * Enhance WHMCS Module - settings (v1.5.1)
+ * Enhance WHMCS Module - settings (v1.6.0)
  *
  * Settings are edited in Addons > Enhance Manager > Settings and stored in the
  * table mod_enhance_settings. A constant defined in config.php (see the list in
@@ -37,6 +37,7 @@ class EnhanceSettings
         'show_backups'       => ['type' => 'bool',  'default' => true,    'constant' => 'ENHANCE_CLIENTAREA_BACKUPS'],
         'show_backup_size'   => ['type' => 'bool',  'default' => true,    'constant' => 'ENHANCE_CLIENTAREA_BACKUP_SIZE'],
         'show_features'      => ['type' => 'bool',  'default' => true,    'constant' => 'ENHANCE_CLIENTAREA_FEATURES'],
+        'services_button'    => ['type' => 'bool',  'default' => true,    'constant' => 'ENHANCE_CLIENTAREA_SERVICES_BUTTON'],
         // Listing and performance
         'websites_per_page'  => ['type' => 'int',   'default' => 5,       'constant' => 'ENHANCE_CLIENTAREA_WEBSITES_PER_PAGE', 'min' => 1, 'max' => 50],
         'backups_shown'      => ['type' => 'int',   'default' => 5,       'constant' => 'ENHANCE_CLIENTAREA_BACKUPS_SHOWN', 'min' => 1, 'max' => 30],

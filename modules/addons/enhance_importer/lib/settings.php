@@ -78,7 +78,7 @@ function enhance_importer_settings_form(array $settings, string $action): string
         . '</div><div class="col-md-5">' . enhance_importer_settings_preview() . '</div></div>';
 
     $sections = $checkbox('show_usage') . $checkbox('show_ssl') . $checkbox('show_webmail') . $checkbox('show_phpmyadmin')
-        . $checkbox('show_wordpress') . $checkbox('show_backups') . $checkbox('show_backup_size') . $checkbox('show_features');
+        . $checkbox('show_wordpress') . $checkbox('show_backups') . $checkbox('show_backup_size') . $checkbox('show_features') . $checkbox('services_button');
     $listing = '<div class="row"><div class="col-md-4">' . $number('websites_per_page') . '</div><div class="col-md-4">' . $number('backups_shown')
         . '</div><div class="col-md-4">' . $number('cache_ttl') . '</div></div>';
     $restore = $checkbox('restore_enabled');
